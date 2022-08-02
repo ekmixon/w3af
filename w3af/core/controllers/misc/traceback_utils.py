@@ -53,6 +53,6 @@ def get_exception_location(tb):
     while getattr(current, 'tb_next', None) is not None:
         current = current.tb_next
 
-    function_name = '%s()' % current.tb_frame.f_code.co_name
+    function_name = f'{current.tb_frame.f_code.co_name}()'
 
     return path, file_name, function_name, current.tb_lineno

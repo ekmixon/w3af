@@ -94,9 +94,9 @@ class TestCoreExceptions(unittest.TestCase):
         Verify that the ScanMustStopByUserRequest stops the scan.
         """
         self.exception_plugin.exception_to_raise = ScanMustStopByUserRequest
-        
+
         with patch('w3af.core.controllers.w3afCore.om.out') as om_mock:
             self.w3afcore.start()
-            
+
             message = 'Test exception.'
             self.assertIn(call.information(message), om_mock.mock_calls)

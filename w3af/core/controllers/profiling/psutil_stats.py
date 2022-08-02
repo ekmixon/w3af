@@ -35,10 +35,7 @@ SAVE_PSUTIL_PTR = []
 def user_wants_psutil():
     _should_profile = os.environ.get('W3AF_PSUTILS', '0')
 
-    if _should_profile.isdigit() and int(_should_profile) == 1:
-        return True
-
-    return False
+    return bool(_should_profile.isdigit() and int(_should_profile) == 1)
 
 
 if user_wants_psutil():
@@ -124,7 +121,7 @@ def dump_psutil():
                    'Disk IO counters': psutil.disk_io_counters(),
                    'Disk usage': disk_usage,
                    'Thread CPU usage': get_threads_cpu_percent()}
-    
+
     json.dump(psutil_data, file(output_file, 'w'), indent=4, sort_keys=True)
 
 
@@ -182,4 +179,4 @@ def get_human_readable_size(num):
     while i+1 < len(exp_str) and num >= (2 ** exp_str[i+1][0]):
         i += 1
         rounded_val = round(float(num) / 2 ** exp_str[i][0], 2)
-    return '%s %s' % (int(rounded_val), exp_str[i][1])
+    return f'{int(rounded_val)} {exp_str[i][1]}'

@@ -138,17 +138,17 @@ class logger:
 
     def info(self, *msg):
         msg = self.parse_msg(msg)
-        msg = '[ ' + now() + ' ][info] ' + msg + '\n'
+        msg = f'[ {now()} ][info] {msg}' + '\n'
         sys.stdout.write(msg)
 
     def error(self, *msg):
         msg = self.parse_msg(msg)
-        msg = '[ ' + now() + ' ][error] ' + msg + '\n'
+        msg = f'[ {now()} ][error] {msg}' + '\n'
         sys.stderr.write(msg)
 
     def debug(self, *msg):
         msg = self.parse_msg(msg)
-        msg = '[ ' + now() + ' ][debug] ' + msg + '\n'
+        msg = f'[ {now()} ][debug] {msg}' + '\n'
         if self._printDebug:
             sys.stdout.write(msg)
 
@@ -290,16 +290,14 @@ class ConnectionManager(threading.Thread):
             raise Request_Invalid_Format(data)
 
         # Extracting components of the request. Checks are made at each step.
-        req = {}
+        req = {'version': ord(data[0])}
 
-        # SOCKS version of the request.
-        req['version'] = ord(data[0])
         if req['version'] != SOCKS_VERSION:
             raise Request_Bad_Version(req)
 
         # Command used.
         req['command'] = ord(data[1])
-        if not req['command'] in COMMANDS:
+        if req['command'] not in COMMANDS:
             raise Request_Unknown_Command(req)
 
         # Address of the remote peer.
@@ -407,10 +405,6 @@ class SocksHandler(threading.Thread):
                     req['userid']), req['address'][1]
             else:
                 log.debug('Invalid socks4a request.')
-
-        else:
-            # this is not a socks4a request
-            pass
 
         return req
 
@@ -579,8 +573,7 @@ factorised because all answers follow the same format."""
         try:
             ip = socket.inet_aton(ip_str)
             port = port2string(port_int)
-            packet = chr(0)        # Version number is 0 in answer
-            packet += chr(code)  # Error code
+            packet = chr(0) + chr(code)
             packet += port
             packet += ip
             log.debug(thread.get_ident(), 'Sending back:',
@@ -604,61 +597,50 @@ simultaneously and to implement an inactivity timeout."""
         # case I would want to do some statistics/logging.
         octets_in, octets_out = 0, 0
         try:
-            try:
-                # Here are the sockets we will be listening.
-                sockslist = [client_sock, server_sock]
-                while 1:
-                    # Let us listen...
-                    readables, writeables, exceptions = select.select(
-                        sockslist, [], [],
-                        360)
-                    # If the "exceptions" list is not empty or if we are here
-                    # because of the timer (i.e. all lists are empty), then
-                    # we must must bail out, we have finished our work.
-                    if (exceptions
-                            or (readables, writeables, exceptions) == ([], [], [])):
-                        raise Connection_Closed
+            # Here are the sockets we will be listening.
+            sockslist = [client_sock, server_sock]
+            while 1:
+                # Let us listen...
+                readables, writeables, exceptions = select.select(
+                    sockslist, [], [],
+                    360)
+                # If the "exceptions" list is not empty or if we are here
+                # because of the timer (i.e. all lists are empty), then
+                # we must must bail out, we have finished our work.
+                if (exceptions
+                        or (readables, writeables, exceptions) == ([], [], [])):
+                    raise Connection_Closed
 
-                    # Only a precaution.
-                    data = ''
+                # Only a precaution.
+                data = ''
 
                     # Just in case we would be in the improbable case of data
                     # awaiting to be read on both sockets, we treat the
                     # "readables" list as if it oculd contain more than one
                     # element. Thus the "for" loop...
-                    for readable_sock in readables:
-                        # We know the socket we want to read of, but we still
-                        # must find what is the other socket. This method
-                        # builds a list containing one element.
-                        writeableslist = [client_sock, server_sock]
-                        writeableslist.remove(readable_sock)
+                for readable_sock in readables:
+                    # We know the socket we want to read of, but we still
+                    # must find what is the other socket. This method
+                    # builds a list containing one element.
+                    writeableslist = [client_sock, server_sock]
+                    writeableslist.remove(readable_sock)
 
-                        # We read one chunk of data and then send it to the
-                        # other socket
-                        data = readable_sock.recv(1024)
-                        # We must handle the case where data=='' because of a
-                        # bug: we sometimes end with an half-closed socket,
-                        # i.e. a socket closed by the peer, on which one can
-                        # always read, but where there is no data to read.
-                        # This must be detected or it would lead to an infinite
-                        # loop.
-                        if data:
-                            writeableslist[0].send(data)
-                            # This is only for future logging/stats.
-                            if readable_sock == client_sock:
-                                octets_out += len(data)
-                            else:
-                                octets_in += len(data)
+                    if data := readable_sock.recv(1024):
+                        writeableslist[0].send(data)
+                        # This is only for future logging/stats.
+                        if readable_sock == client_sock:
+                            octets_out += len(data)
                         else:
-                            # The sock is readable but nothing can be read.
-                            # This means a poorly detected connection close.
-                            raise Connection_Closed
-            # If one peer closes its conenction, we have finished our work.
-            except socket.error:
-                exception, value, traceback = sys.exc_info()
-                if value[0] == ERR_CONNECTION_RESET_BY_PEER:
-                    raise Connection_Closed
-                raise
+                            octets_in += len(data)
+                    else:
+                        # The sock is readable but nothing can be read.
+                        # This means a poorly detected connection close.
+                        raise Connection_Closed
+        except socket.error:
+            exception, value, traceback = sys.exc_info()
+            if value[0] == ERR_CONNECTION_RESET_BY_PEER:
+                raise Connection_Closed
+            raise
         finally:
             log.debug(thread.get_ident(), octets_in, 'octets in and',
                       octets_out, 'octets out. Connection closed.')

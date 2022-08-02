@@ -66,10 +66,7 @@ class ScalableBloomFilter(object):
         True
 
         """
-        for f in reversed(self.filters):
-            if key in f:
-                return True
-        return False
+        return any(key in f for f in reversed(self.filters))
 
     def add(self, key):
         """
@@ -106,7 +103,7 @@ class ScalableBloomFilter(object):
     @property
     def capacity(self):
         """Returns the total capacity for all filters in this SBF"""
-        return sum([f.capacity for f in self.filters])
+        return sum(f.capacity for f in self.filters)
 
     @property
     def count(self):
@@ -114,4 +111,4 @@ class ScalableBloomFilter(object):
 
     def __len__(self):
         """Returns the total number of elements stored in this SBF"""
-        return sum([len(f) for f in self.filters])
+        return sum(len(f) for f in self.filters)

@@ -50,27 +50,27 @@ class PylintRunner(unittest.TestCase):
     def run_pylint(self, directory):
         pylint_rc = os.path.join(ROOT_PATH, 'core', 'controllers', 'tests',
                                  'pylint.rc')
-        pylint_args = [directory, '-E', '--rcfile=%s' % pylint_rc]
+        pylint_args = [directory, '-E', f'--rcfile={pylint_rc}']
         pylint_output = WritableObject()
         lint.Run(pylint_args, reporter=TextReporter(pylint_output), exit=False)
         return pylint_output
     
     def test_pylint_plugins(self):
-        pylint_output = self.run_pylint('%s/plugins/' % ROOT_PATH)
+        pylint_output = self.run_pylint(f'{ROOT_PATH}/plugins/')
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
     def test_pylint_core_controllers(self):
-        pylint_output = self.run_pylint('%s/core/controllers/' % ROOT_PATH)
+        pylint_output = self.run_pylint(f'{ROOT_PATH}/core/controllers/')
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
     def test_pylint_core_data(self):
-        pylint_output = self.run_pylint('%s/core/data/' % ROOT_PATH)
+        pylint_output = self.run_pylint(f'{ROOT_PATH}/core/data/')
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
     def test_pylint_core_ui(self):
-        pylint_output = self.run_pylint('%s/core/ui/' % ROOT_PATH)
+        pylint_output = self.run_pylint(f'{ROOT_PATH}/core/ui/')
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))

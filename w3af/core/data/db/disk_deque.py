@@ -60,7 +60,7 @@ class DiskDeque(object):
     def rotate(self, n=1):
         if self:
             n %= len(self)
-            for i in xrange(n):
+            for _ in xrange(n):
                 self.appendleft(self.pop())
 
     def __getitem__(self, i):

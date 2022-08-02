@@ -30,5 +30,5 @@ def get_wavsep_http(path='/'):
     except IOError:
         wavsep_netloc = DEFAULT_WAVSEP
 
-    return 'http://%s%s' % (wavsep_netloc, path)
+    return f'http://{wavsep_netloc}{path}'
 

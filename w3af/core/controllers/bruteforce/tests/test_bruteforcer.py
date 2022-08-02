@@ -64,10 +64,7 @@ class TestUserPasswordBruteforcer(unittest.TestCase):
             ('user1',
              'user1')             # User eq password
         ]
-        generated = []
-
-        for (user, pwd) in bf.generator():
-            generated.append((user, pwd))
+        generated = list(bf.generator())
 
         for expected_comb in expected_combinations:
             self.assertTrue(expected_comb in generated)
@@ -96,10 +93,7 @@ class TestUserPasswordBruteforcer(unittest.TestCase):
         bf.combo_file = combo_filename
         bf.combo_separator = ':'
 
-        generated = []
-
-        for (user, pwd) in bf.generator():
-            generated.append((user, pwd))
+        generated = list(bf.generator())
 
         for expected_comb in expected_combinations:
             self.assertTrue(expected_comb in generated)

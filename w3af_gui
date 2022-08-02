@@ -67,10 +67,10 @@ def main():
         # print help information and exit:
         usage()
         return -3
-    
+
     profile = None
     doupdate = None
-    
+
     for o, a in opts:
         if o in ("-e"):
             # easter egg
@@ -87,7 +87,7 @@ def main():
             doupdate = True
         elif o in ('-n', '--no-update'):
             doupdate = False
-    
+
 
     # go with GTK, but first check about DISPLAY environment variable
     if sys.platform != "win32":

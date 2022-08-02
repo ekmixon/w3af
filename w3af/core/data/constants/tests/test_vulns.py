@@ -80,12 +80,7 @@ class TestVulnsConstants(unittest.TestCase):
                            '/attack/payloads/',
                            '/plugins/tests/'}
 
-                should_continue = False
-                for ignore in ignores:
-                    if ignore in full_path:
-                        should_continue = True
-                        break
-
+                should_continue = any(ignore in full_path for ignore in ignores)
                 if should_continue:
                     continue
 
@@ -176,15 +171,9 @@ class TestVulnsConstants(unittest.TestCase):
 
         missing_list = []
         for line in file(missing):
-            line = line.strip()
+            if line := line.strip():
+                missing_list.append(line)
 
-            if not line:
-                continue
-
-            missing_list.append(line)
-
-        missing_list = list(set(missing_list))
-        missing_list.sort()
-
+        missing_list = sorted(set(missing_list))
         self.maxDiff = None
         self.assertEqual(missing_list, [])

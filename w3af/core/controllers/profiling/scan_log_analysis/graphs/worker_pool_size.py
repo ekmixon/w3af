@@ -16,8 +16,7 @@ def get_worker_pool_size_data(scan_log_filename, scan):
     worker_pool_timestamps = []
 
     for line in scan:
-        match = WORKER_POOL_SIZE.search(line)
-        if match:
+        if match := WORKER_POOL_SIZE.search(line):
             worker_pool_sizes.append(int(match.group(1)))
             worker_pool_timestamps.append(get_line_epoch(line))
 

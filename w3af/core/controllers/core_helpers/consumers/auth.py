@@ -100,12 +100,12 @@ class auth(BaseConsumer):
         This is the method that actually calls the plugins in order to login
         to the web application.
         """
+        msg = 'auth consumer is calling %s.has_active_session() and %s.login() (did:%s)'
+
         for plugin in self._consumer_plugins:
 
             debugging_id = rand_alnum(8)
             args = (plugin.get_name(), plugin.get_name(), debugging_id)
-            msg = 'auth consumer is calling %s.has_active_session() and %s.login() (did:%s)'
-
             om.out.debug(msg % args)
 
             took_line = TookLine(self._w3af_core,

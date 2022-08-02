@@ -49,11 +49,11 @@ class TestDiskList(unittest.TestCase):
         for i in xrange(0, 1000):
             _ = dl.append(i)
 
-        for i in xrange(0, 1000 / 2):
+        for _ in xrange(0, 1000 / 2):
             r = random.randint(0, 1000 - 1)
             self.assertEqual(r in dl, True)
 
-        for i in xrange(0, 1000 / 2):
+        for _ in xrange(0, 1000 / 2):
             r = random.randint(1000, 1000 * 2)
             self.assertEqual(r in dl, False)
 
@@ -69,8 +69,8 @@ class TestDiskList(unittest.TestCase):
     def test_string(self):
         dl = DiskList()
 
-        for i in xrange(0, 1000):
-            rnd = ''.join(random.choice(string.letters) for i in xrange(40))
+        for _ in xrange(0, 1000):
+            rnd = ''.join(random.choice(string.letters) for _ in xrange(40))
             _ = dl.append(rnd)
 
         self.assertEqual(rnd in dl, True)
@@ -141,10 +141,7 @@ class TestDiskList(unittest.TestCase):
         dl.append(1)
         dl.append([3, 2, 1])
 
-        values = []
-        for i in dl:
-            values.append(i)
-
+        values = list(dl)
         self.assertEqual(values[0], 'a')
         self.assertEqual(values[1], 1)
         self.assertEqual(values[2], [3, 2, 1])
@@ -219,10 +216,7 @@ class TestDiskList(unittest.TestCase):
         dl.append('def')
         dl.append('aaa')
 
-        sorted_dl = []
-        for i in dl.ordered_iter():
-            sorted_dl.append(i)
-
+        sorted_dl = list(dl.ordered_iter())
         self.assertEqual(['aaa', 'abc', 'def'], sorted_dl)
 
     def test_reverse_iteration(self):
@@ -231,10 +225,7 @@ class TestDiskList(unittest.TestCase):
         dl.append(2)
         dl.append(3)
 
-        reverse_iter_res = []
-        for i in reversed(dl):
-            reverse_iter_res.append(i)
-
+        reverse_iter_res = list(reversed(dl))
         self.assertEqual(reverse_iter_res, [3, 2, 1])
 
     def test_thread_safe(self):
@@ -301,23 +292,20 @@ class TestDiskList(unittest.TestCase):
     def test_islice(self):
         disk_list = DiskList()
         disk_list.extend('ABCDEFG')
-        
+
         EXPECTED = 'CDEFG'
-        result = ''
-        
-        for c in itertools.islice(disk_list, 2, None, None):
-            result += c
-        
+        result = ''.join(itertools.islice(disk_list, 2, None, None))
+
         self.assertEqual(EXPECTED, result)
     
     def test_many_instances(self):
         all_instances = []
         amount = 200
-        
+
         for _ in xrange(amount):
             disk_list = DiskList()
             all_instances.append(disk_list)
-        
+
         self.assertEqual(len(all_instances), amount)
     
     def test_slice_all(self):

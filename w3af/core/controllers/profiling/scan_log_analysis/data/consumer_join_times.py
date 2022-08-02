@@ -14,14 +14,17 @@ def get_consumer_join_times(scan_log_filename, scan):
         if 'seconds to join' not in line:
             continue
 
-        match = JOIN_TIMES.search(line)
-        if match:
+        if match := JOIN_TIMES.search(line):
             join_times.append(match.group(0))
 
-    if not join_times:
-        return KeyValueOutput('consumer_join_times',
-                              'The scan log has no calls to join()')
-
-    return KeyValueOutput('consumer_join_times',
-                          'These consumers have been join()ed',
-                          join_times)
+    return (
+        KeyValueOutput(
+            'consumer_join_times',
+            'These consumers have been join()ed',
+            join_times,
+        )
+        if join_times
+        else KeyValueOutput(
+            'consumer_join_times', 'The scan log has no calls to join()'
+        )
+    )

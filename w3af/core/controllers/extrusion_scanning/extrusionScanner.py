@@ -101,12 +101,10 @@ class extrusionScanner(object):
             return True
 
     def estimate_scan_time(self):
-        saved_results = kb.kb.raw_read('extrusionScanner', 'extrusions')
-        if saved_results:
+        if saved_results := kb.kb.raw_read('extrusionScanner', 'extrusions'):
             return 1
-        else:
-            _, file_content, _ = self._selectExtrusionClient()
-            return self._transferHandler.estimate_transfer_time(len(file_content)) + 8
+        _, file_content, _ = self._selectExtrusionClient()
+        return self._transferHandler.estimate_transfer_time(len(file_content)) + 8
 
     def get_inbound_port(self, desiredProtocol='TCP'):
         """
@@ -119,8 +117,8 @@ class extrusionScanner(object):
 
             if remoteId in saved_results:
                 msg = 'Reusing previous result from the knowledge base:'\
-                      '- Selecting port "%s" for inbound connections from the'\
-                      ' compromised server to w3af.'
+                          '- Selecting port "%s" for inbound connections from the'\
+                          ' compromised server to w3af.'
                 om.out.information(msg % saved_results[remoteId])
                 return saved_results[remoteId]
 
@@ -129,8 +127,11 @@ class extrusionScanner(object):
 
         es = extrusionServer(self._tcp_port_list, self._udp_port_list)
         if not es.can_sniff():
-            msg = 'The user running w3af can\'t sniff on the specified'
-            msg += ' interface. Hints: Are you root? Does this interface'
+            msg = (
+                'The user running w3af can\'t sniff on the specified'
+                + ' interface. Hints: Are you root? Does this interface'
+            )
+
             msg += ' exist?'
             raise BaseFrameworkException(msg)
         else:
@@ -148,8 +149,11 @@ class extrusionScanner(object):
             om.out.information('Finished extrusion scan.')
 
             if not res:
-                msg = 'No inbound ports have been found. Maybe the extrusion'
-                msg += ' scan failed ?'
+                msg = (
+                    'No inbound ports have been found. Maybe the extrusion'
+                    + ' scan failed ?'
+                )
+
                 raise BaseFrameworkException(msg)
             else:
                 host = res[0][0]
@@ -161,49 +165,54 @@ class extrusionScanner(object):
                     if x[0] == host:
                         port = x[1]
                         protocol = x[2]
-                        om.out.information('- ' + str(port) + '/' + protocol)
+                        om.out.information(f'- {str(port)}/{protocol}')
                         portList.append((port, protocol))
 
                 localPorts = []
-                for port, protocol in portList:
-                    if self.is_available(port, protocol):
-                        localPorts.append((port, protocol))
+                localPorts.extend(
+                    (port, protocol)
+                    for port, protocol in portList
+                    if self.is_available(port, protocol)
+                )
 
                 if not localPorts:
                     raise BaseFrameworkException('All the inbound ports are in use.')
-                else:
-                    msg = 'The following ports are not bound to a local process'
-                    msg += ' and can be used by w3af:'
-                    om.out.information(msg)
-                    for lp, proto in localPorts:
-                        om.out.information('- ' + str(lp) + '/' + proto)
+                msg = (
+                    'The following ports are not bound to a local process'
+                    + ' and can be used by w3af:'
+                )
 
-                        # Selecting the highest port
-                        if desiredProtocol.upper() == proto.upper():
-                            port = lp
+                om.out.information(msg)
+                for lp, proto in localPorts:
+                    om.out.information(f'- {str(lp)}/{proto}')
 
-                    msg = 'Selecting port "%s/%s" for inbound connections from'
-                    msg += ' the compromised server to w3af.'
-                    om.out.information(msg % (port, proto))
+                    # Selecting the highest port
+                    if desiredProtocol.upper() == proto.upper():
+                        port = lp
 
-                    if not self._forceReRun:
-                        om.out.debug('Saving information in the kb.')
-                        saved_results = kb.kb.raw_read('extrusionScanner',
-                                                       'extrusions')
-                        if saved_results:
-                            saved_results[remoteId] = port
-                        else:
-                            saved_results = {}
-                            saved_results[remoteId] = port
-                        kb.kb.raw_write('extrusionScanner', 'extrusions',
-                                        saved_results)
+                msg = (
+                    'Selecting port "%s/%s" for inbound connections from'
+                    + ' the compromised server to w3af.'
+                )
 
-                    return port
+                om.out.information(msg % (port, proto))
+
+                if not self._forceReRun:
+                    om.out.debug('Saving information in the kb.')
+                    saved_results = (
+                        kb.kb.raw_read('extrusionScanner', 'extrusions') or {}
+                    )
+
+                    saved_results[remoteId] = port
+                    kb.kb.raw_write('extrusionScanner', 'extrusions',
+                                    saved_results)
+
+                return port
 
     def _sendExtrusionClient(self):
         interpreter, extrusionClient, extension = self._selectExtrusionClient()
         remoteFilename = get_remote_temp_file(self._exec_method)
-        remoteFilename += '.' + extension
+        remoteFilename += f'.{extension}'
 
         # do the transfer
         apply(self._transferHandler.transfer, (extrusionClient,
@@ -215,7 +224,7 @@ class extrusionScanner(object):
         """
         A wrapper for executing commands
         """
-        om.out.debug('Executing: ' + command)
+        om.out.debug(f'Executing: {command}')
         response = apply(self._exec_method, (command,))
         om.out.debug('"' + command + '" returned: ' + response)
         return response
@@ -250,8 +259,11 @@ class extrusionScanner(object):
             extension = 'py'
             interpreter = 'python'
         else:
-            msg = 'Failed to find a suitable extrusion scanner client for'
-            msg += ' the remote system.'
+            msg = (
+                'Failed to find a suitable extrusion scanner client for'
+                + ' the remote system.'
+            )
+
             raise BaseFrameworkException(msg)
 
         return interpreter, fileContent, extension

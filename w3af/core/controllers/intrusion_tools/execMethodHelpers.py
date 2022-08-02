@@ -69,20 +69,18 @@ def get_remote_temp_file(exec_method):
         _filename += rand_alnum(6)
 
         # verify exists
-        dir_res = exec_method('dir ' + _filename).strip().lower()
-        if 'not found' in dir_res:
-            return _filename
-        else:
-            # Shit, the file exists, run again and see what we can do
-            return get_remote_temp_file(exec_method)
-
-        return _filename
+        dir_res = exec_method(f'dir {_filename}').strip().lower()
+        return (
+            _filename
+            if 'not found' in dir_res
+            else get_remote_temp_file(exec_method)
+        )
 
     elif os == 'linux':
-        _filename = '/tmp/' + rand_alnum(6)
+        _filename = f'/tmp/{rand_alnum(6)}'
 
         # verify exists
-        ls_res = exec_method('ls ' + _filename).strip()
+        ls_res = exec_method(f'ls {_filename}').strip()
         if 'No such file' in ls_res:
             return _filename
         else:

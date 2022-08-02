@@ -38,8 +38,8 @@ class winVd(vdaemon):
         """
         Removes the created file and the crontab entry.
         """
-        self._exec('del ' + self._remote_filename)
-        self._exec('del ' + self._remote_filename + '._')
+        self._exec(f'del {self._remote_filename}')
+        self._exec(f'del {self._remote_filename}._')
 
     def _exec_payload(self):
         """

@@ -86,7 +86,7 @@ class InterceptProxy(Proxy):
         Set list that indicates what METHODS TO trap.
         If list is empty then we will trap all methods
         """
-        self.methods_to_trap = set(i.upper() for i in methods)
+        self.methods_to_trap = {i.upper() for i in methods}
 
     def set_what_not_to_trap(self, regex):
         """

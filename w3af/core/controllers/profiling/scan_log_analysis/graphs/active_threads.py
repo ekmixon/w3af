@@ -16,8 +16,7 @@ def get_active_threads_data(scan_log_filename, scan):
     active_threads_timestamps = []
 
     for line in scan:
-        match = ACTIVE_THREADS.search(line)
-        if match:
+        if match := ACTIVE_THREADS.search(line):
             active_threads.append(float(match.group(1)))
             active_threads_timestamps.append(get_line_epoch(line))
 

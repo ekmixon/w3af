@@ -105,12 +105,12 @@ class BlindSqliResponseDiff(object):
 
             # One of the confirmation rounds yields "no vuln found"
             if vuln is None:
-                msg = 'Confirmation round %s for %s failed.' % (confirmations, statement_type)
+                msg = f'Confirmation round {confirmations} for {statement_type} failed.'
                 self.debug(msg, mutant=mutant)
                 break
 
             # One confirmation round succeeded
-            msg = 'Confirmation round %s for %s succeeded.' % (confirmations, statement_type)
+            msg = f'Confirmation round {confirmations} for {statement_type} succeeded.'
             self.debug(msg, mutant=mutant)
             confirmations += 1
 
@@ -121,7 +121,6 @@ class BlindSqliResponseDiff(object):
         """
         Returns a list of statement tuples.
         """
-        res = {}
         exclude_numbers = exclude_numbers or []
 
         rnd_num = int(rand_number(2, exclude_numbers))
@@ -132,8 +131,7 @@ class BlindSqliResponseDiff(object):
         # Numeric/Datetime
         true_stm = '%(num)s OR %(num)s=%(num)s OR %(num)s=%(num)s ' % num_dict
         false_stm = '%i AND %i=%i ' % (rnd_num, rnd_num, rnd_num_plus_one)
-        res[self.NUMERIC] = (true_stm, false_stm)
-
+        res = {self.NUMERIC: (true_stm, false_stm)}
         # Single quotes
         true_stm = "%(num)s' OR '%(num)s'='%(num)s' OR '%(num)s'='%(num)s" % num_dict
         false_stm = "%i' AND '%i'='%i" % (rnd_num, rnd_num, rnd_num_plus_one)
@@ -320,7 +318,7 @@ class BlindSqliResponseDiff(object):
                                      body_false_response,
                                      compare_diff):
             return None
-            
+
         response_ids = [second_false_response.id,
                         second_true_response.id]
 
@@ -363,26 +361,21 @@ class BlindSqliResponseDiff(object):
         :param response_2: HTTP response for [r2.id: ...]
         :return: None, we write to the log
         """
-        tags = ['[blind_sqli]']
-
         did = self._debugging_id
-        tags.append('[did: %s]' % did)
-
+        tags = ['[blind_sqli]', f'[did: {did}]']
         if mutant is not None:
-            tags.append('[mid: %s]' % id(mutant))
-            tags.append('[param: %s]' % mutant.get_token_name())
-
+            tags.extend((f'[mid: {id(mutant)}]', f'[param: {mutant.get_token_name()}]'))
         if statement_type is not None:
-            tags.append('[stm: %s]' % statement_type)
+            tags.append(f'[stm: {statement_type}]')
 
         if response_1 is not None:
-            tags.append('[r1.id: %s]' % response_1.id)
+            tags.append(f'[r1.id: {response_1.id}]')
 
         if response_2 is not None:
-            tags.append('[r2.id: %s]' % response_2.id)
+            tags.append(f'[r2.id: {response_2.id}]')
 
         log_line = ' '.join(tags)
-        log_line += ' %s' % msg
+        log_line += f' {msg}'
 
         om.out.debug(log_line)
 

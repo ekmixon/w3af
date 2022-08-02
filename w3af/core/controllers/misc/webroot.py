@@ -31,36 +31,38 @@ def get_webroot_dirs(domain=None):
     """
     result = []
 
-    # This one has more probability of success that all the other ones together
-    obtained_webroot = kb.kb.raw_read('path_disclosure', 'webroot')
-    if obtained_webroot:
+    if obtained_webroot := kb.kb.raw_read('path_disclosure', 'webroot'):
         result.append(obtained_webroot)
 
     if domain:
-        root_domain = URL('http://' + domain).get_root_domain()
+        root_domain = URL(f'http://{domain}').get_root_domain()
 
-        result.append('/var/www/' + domain)
-        result.append('/var/www/' + domain + '/www/')
-        result.append('/var/www/' + domain + '/html/')
-        result.append('/var/www/' + domain + '/htdocs/')
-
-        result.append('/home/' + domain)
-        result.append('/home/' + domain + '/www/')
-        result.append('/home/' + domain + '/html/')
-        result.append('/home/' + domain + '/htdocs/')
+        result.extend(
+            (
+                f'/var/www/{domain}',
+                f'/var/www/{domain}/www/',
+                f'/var/www/{domain}/html/',
+                f'/var/www/{domain}/htdocs/',
+                f'/home/{domain}',
+                f'/home/{domain}/www/',
+                f'/home/{domain}/html/',
+                f'/home/{domain}/htdocs/',
+            )
+        )
 
         if domain != root_domain:
-            result.append('/home/' + root_domain)
-            result.append('/home/' + root_domain + '/www/')
-            result.append('/home/' + root_domain + '/html/')
-            result.append('/home/' + root_domain + '/htdocs/')
-            result.append('/var/www/' + root_domain)
-            result.append('/var/www/' + root_domain + '/www/')
-            result.append('/var/www/' + root_domain + '/html/')
-            result.append('/var/www/' + root_domain + '/htdocs/')
+            result.extend(
+                (
+                    f'/home/{root_domain}',
+                    f'/home/{root_domain}/www/',
+                    f'/home/{root_domain}/html/',
+                    f'/home/{root_domain}/htdocs/',
+                    f'/var/www/{root_domain}',
+                    f'/var/www/{root_domain}/www/',
+                    f'/var/www/{root_domain}/html/',
+                    f'/var/www/{root_domain}/htdocs/',
+                )
+            )
 
-    result.append('/var/www/')
-    result.append('/var/www/html/')
-    result.append('/var/www/htdocs/')
-
+    result.extend(('/var/www/', '/var/www/html/', '/var/www/htdocs/'))
     return result

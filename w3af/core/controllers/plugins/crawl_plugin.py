@@ -93,7 +93,7 @@ class CrawlPlugin(Plugin):
         http_response = self._uri_opener.send_mutant(fr, cache=True, *args, **kwargs)
 
         # The 204 check is because of Plugin.handle_url_error()
-        if not is_404(http_response) and not http_response.get_code() == 204:
+        if not is_404(http_response) and http_response.get_code() != 204:
             self.output_queue.put(fr)
 
             if on_success is not None:

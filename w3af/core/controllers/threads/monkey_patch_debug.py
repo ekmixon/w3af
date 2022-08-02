@@ -27,7 +27,7 @@ import w3af.core.controllers.threads.pool276 as pool276
 
 def new_debug(msg, *args):
     om_msg = msg % args
-    om_msg = '[threadpool] %s' % om_msg
+    om_msg = f'[threadpool] {om_msg}'
     om.out.debug(om_msg)
 
 

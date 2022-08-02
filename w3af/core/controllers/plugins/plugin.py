@@ -117,8 +117,7 @@ class Plugin(Configurable):
         """
         :return: A list of option objects for this plugin.
         """
-        ol = OptionList()
-        return ol
+        return OptionList()
 
     def get_plugin_deps(self):
         """
@@ -132,14 +131,13 @@ class Plugin(Configurable):
         """
         :return: A description of the plugin.
         """
-        if self.__doc__ is not None:
-            tmp = self.__doc__.replace('    ', '')
-            
-            res = ''.join(l for l in tmp.split('\n') if l != '' and
-                          not l.startswith(':'))
-        else:
-            res = 'No description available for this plugin.'
-        return res
+        if self.__doc__ is None:
+            return 'No description available for this plugin.'
+        tmp = self.__doc__.replace('    ', '')
+
+        return ''.join(
+            l for l in tmp.split('\n') if l != '' and not l.startswith(':')
+        )
 
     def get_long_desc(self):
         """
@@ -189,7 +187,7 @@ class Plugin(Configurable):
         return self.__class__.__name__ == other.__class__.__name__
 
     def __repr__(self):
-        return '<%s.%s>' % (self.get_type(), self.get_name())
+        return f'<{self.get_type()}.{self.get_name()}>'
 
     def end(self):
         """
@@ -267,7 +265,7 @@ class Plugin(Configurable):
                       sense if re_raise is False.
         """
         no_content_resp = new_no_content_resp(uri, add_id=True)
-        
+
         msg = ('The %s plugin got an error while requesting "%s".'
                ' Exception: "%s".'
                ' Generated 204 "No Content" response (id:%s)')

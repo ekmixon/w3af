@@ -16,8 +16,7 @@ def get_queue_size_audit_data(scan_log_filename, scan):
     auditor_queue_timestamps = []
 
     for line in scan:
-        match = AUDITOR_DISK_DICT.search(line)
-        if match:
+        if match := AUDITOR_DISK_DICT.search(line):
             auditor_queue_sizes.append(int(match.group(1)))
             auditor_queue_timestamps.append(get_line_epoch(line))
 
@@ -39,7 +38,7 @@ def draw_queue_size_audit(scan_log_filename, scan):
         return
 
     print('Audit consumer queue size')
-    print('    Latest queue size value: %s' % auditor_queue_sizes[-1])
+    print(f'    Latest queue size value: {auditor_queue_sizes[-1]}')
     print('')
 
     fig = plotille.Figure()

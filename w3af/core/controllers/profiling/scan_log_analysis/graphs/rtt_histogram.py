@@ -12,8 +12,7 @@ def get_rtt_histogram_data(scan_log_filename, scan):
     rtts = []
 
     for line in scan:
-        match = RTT_RE.search(line)
-        if match:
+        if match := RTT_RE.search(line):
             rtts.append(float(match.group(1)))
 
     return rtts

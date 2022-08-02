@@ -91,7 +91,7 @@ class extrusionServer(object):
         all_ports = self._tcp_ports[:]
         all_ports.extend(self._udp_ports)
         all_ports = list(set(all_ports))
-        filter = ' or '.join(['port ' + str(p) for p in all_ports])
+        filter = ' or '.join([f'port {str(p)}' for p in all_ports])
 
         msg = 'ExtrusionServer listening on interface: %s'
         om.out.information(msg % self._iface)
@@ -140,7 +140,7 @@ class extrusionServer(object):
             #
             # 0x2 flag is SYN
             if p.haslayer(TCP) and p[TCP].dport in self._tcp_ports and\
-            p[IP].dst in get_if_addr(self._iface) and p[TCP].flags == 0x2:
+                p[IP].dst in get_if_addr(self._iface) and p[TCP].flags == 0x2:
 
                 possible_packets.append(p)
                 if p[IP].src in possible_hosts:
@@ -150,7 +150,7 @@ class extrusionServer(object):
 
             # Analyze UDP
             if p.haslayer(UDP) and p[UDP].dport in self._udp_ports and\
-                    p[IP].dst in get_if_addr(self._iface):
+                        p[IP].dst in get_if_addr(self._iface):
 
                 possible_packets.append(p)
                 if p[IP].src in possible_hosts:
@@ -159,12 +159,13 @@ class extrusionServer(object):
                     possible_hosts[p[IP].src] = 1
 
         for p in possible_packets:
-            om.out.debug('[extrusionServer] Possible packet: ' + p.summary())
+            om.out.debug(f'[extrusionServer] Possible packet: {p.summary()}')
 
         # Now get the one that has more probability of being the one... and
         # report the list of ports
         def sortfunc(x, y):
             return cmp(x[1], y[1])
+
         items = possible_hosts.items()
         items.sort(sortfunc)
 
@@ -180,13 +181,13 @@ class extrusionServer(object):
                     _tuple = (p[IP].src, p[TCP].dport, 'TCP')
                     if _tuple not in good_ports:
                         good_ports.append(_tuple)
-                        om.out.debug('[extrusionServer] Adding ' + str(_tuple))
+                        om.out.debug(f'[extrusionServer] Adding {_tuple}')
 
                 if p.haslayer(UDP):
                     _tuple = (p[IP].src, p[UDP].dport, 'UDP')
                     if _tuple not in good_ports:
                         good_ports.append(_tuple)
-                        om.out.debug('[extrusionServer] Adding ' + str(_tuple))
+                        om.out.debug(f'[extrusionServer] Adding {_tuple}')
 
         return good_ports
 
@@ -203,17 +204,22 @@ class extrusionServer(object):
         good_ports = []
 
         for p in packets:
-            if p[TCP] is not None and p[TCP].dport in self._tcp_ports and\
-            p[IP].src == self._host and p[TCP].flags == 0x2:
+            if (
+                p[TCP] is not None
+                and p[TCP].dport in self._tcp_ports
+                and p[IP].src == self._host
+                and p[TCP].flags == 0x2
+                and (p[IP].src, p[TCP].dport, 'TCP') not in good_ports
+            ):
+                good_ports.append((p[IP].src, p[TCP].dport, 'TCP'))
 
-                if (p[IP].src, p[TCP].dport, 'TCP') not in good_ports:
-                    good_ports.append((p[IP].src, p[TCP].dport, 'TCP'))
-
-            if p[UDP] is not None and p[UDP].dport in self._udp_ports and\
-            p[IP].src == self._host:
-
-                if (p[IP].src, p[UDP].dport, 'UDP') not in good_ports:
-                    good_ports.append((p[IP].src, p[UDP].dport, 'UDP'))
+            if (
+                p[UDP] is not None
+                and p[UDP].dport in self._udp_ports
+                and p[IP].src == self._host
+                and (p[IP].src, p[UDP].dport, 'UDP') not in good_ports
+            ):
+                good_ports.append((p[IP].src, p[UDP].dport, 'UDP'))
 
         return good_ports
 

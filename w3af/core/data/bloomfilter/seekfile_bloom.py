@@ -77,10 +77,7 @@ class FileSeekBloomFilter(GenericBloomFilter):
         """
         :return: True if key is in the filter.
         """
-        for bitno in self.generate_bits_for_key(key):
-            if not self.is_set(bitno):
-                return False
-        return True
+        return all(self.is_set(bitno) for bitno in self.generate_bits_for_key(key))
 
     def to_bytes(self, key):
         """
@@ -101,19 +98,16 @@ class FileSeekBloomFilter(GenericBloomFilter):
         # Both algorithms pass my unittests, but with sha512 it takes 2 more
         # seconds (26 vs. 28), so I'm going to leave md5.
         #m = hashlib.sha512()
-        
+
         for i in xrange(self.num_hashes):
             seed = self.hash_seeds[i]
-            
+
             m.update(seed)
             m.update(key_str)
             hash_result = m.digest()
-            
+
             long_numbers = struct.unpack('QQ', hash_result)
-            #long_numbers = struct.unpack('QQQQQQQQ', hash_result)
-            bitno = sum(long_numbers) % self.num_bits
-            
-            yield bitno
+            yield sum(long_numbers) % self.num_bits
 
     def is_set(self, bitno):
         """Return true iff bit number bitno is set"""

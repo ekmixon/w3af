@@ -49,8 +49,9 @@ class TestWebserver(unittest.TestCase):
 
     def test_GET_404(self):
         # Raises a 404
-        self.assertRaises(urllib2.HTTPError, urllib2.urlopen,
-                          'http://%s:%s' % (self.IP, self.PORT))
+        self.assertRaises(
+            urllib2.HTTPError, urllib2.urlopen, f'http://{self.IP}:{self.PORT}'
+        )
 
     def _create_file(self):
         # Create a file and request it
@@ -66,16 +67,16 @@ class TestWebserver(unittest.TestCase):
     def test_GET_exists(self):
         self._create_file()
 
-        url = 'http://%s:%s/foofile.txt' % (self.IP, self.PORT)
+        url = f'http://{self.IP}:{self.PORT}/foofile.txt'
         response_body = urllib2.urlopen(url).read()
-        
+
         self.assertEqual(response_body, self.TESTSTRING)
     
     def test_any_free_port(self):
         self._create_file()
         _, port = start_webserver_any_free_port(self.IP, self.tempdir)
-        
-        url = 'http://%s:%s/foofile.txt' % (self.IP, port)
+
+        url = f'http://{self.IP}:{port}/foofile.txt'
         response_body = urllib2.urlopen(url).read()
-        
+
         self.assertEqual(response_body, self.TESTSTRING)

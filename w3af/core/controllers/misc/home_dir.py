@@ -115,8 +115,8 @@ def verify_dir_has_perm(path, perm, levels=0):
     :param levels: Depth levels to test
     """
     if not os.path.exists(path):
-        raise RuntimeError('%s does NOT exist!' % path)
-    
+        raise RuntimeError(f'{path} does NOT exist!')
+
     path = os.path.normpath(path)
     pdepth = len(path.split(os.path.sep))
 
@@ -129,16 +129,15 @@ def verify_dir_has_perm(path, perm, levels=0):
     # From 1st to `levels`th
     for root, dirs, files in os.walk(path):
         currentlevel = len(root.split(os.path.sep)) - pdepth
-        
+
         if currentlevel > levels:
             break
         elif ".git" in dirs:
             dirs.remove(".git")
 
         for file_path in (os.path.join(root, f) for f in dirs + files):
-            if os.path.exists(file_path):
-                if not os.access(file_path, perm):
-                    #print('No permissions for "%s".' % file_path)
-                    return False
+            if os.path.exists(file_path) and not os.access(file_path, perm):
+                #print('No permissions for "%s".' % file_path)
+                return False
     return True
 

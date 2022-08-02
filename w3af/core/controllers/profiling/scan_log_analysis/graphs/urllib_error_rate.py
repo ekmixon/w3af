@@ -15,8 +15,7 @@ def get_error_rate_data(scan_log_filename, scan):
     error_rate_timestamps = []
 
     for line in scan:
-        match = EXTENDED_URLLIB_ERRORS_RE.search(line)
-        if match:
+        if match := EXTENDED_URLLIB_ERRORS_RE.search(line):
             error_rate.append(int(match.group(1)))
             error_rate_timestamps.append(get_line_epoch(line))
 
@@ -26,10 +25,18 @@ def get_error_rate_data(scan_log_filename, scan):
 def get_error_rate_summary(scan_log_filename, scan):
     error_rate, _ = get_error_rate_data(scan_log_filename, scan)
 
-    return KeyValueOutput('error_rate_summary',
-                          'Error rate summary',
-                          {'Error rate exceeded 10%': False if not error_rate else max(error_rate) > 10,
-                           'Error rate exceeded 20%': False if not error_rate else max(error_rate) > 20})
+    return KeyValueOutput(
+        'error_rate_summary',
+        'Error rate summary',
+        {
+            'Error rate exceeded 10%': max(error_rate) > 10
+            if error_rate
+            else False,
+            'Error rate exceeded 20%': max(error_rate) > 20
+            if error_rate
+            else False,
+        },
+    )
 
 
 def draw_extended_urllib_error_rate(scan_log_filename, scan):

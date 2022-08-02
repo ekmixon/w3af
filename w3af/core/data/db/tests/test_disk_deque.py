@@ -60,10 +60,7 @@ class TestDiskDeque(unittest.TestCase):
         disk_deque.append(1)
         disk_deque.append(2)
 
-        contents = []
-        for i in disk_deque:
-            contents.append(i)
-
+        contents = list(disk_deque)
         self.assertEqual(contents, [1, 2])
 
     def test_namedtuple(self):

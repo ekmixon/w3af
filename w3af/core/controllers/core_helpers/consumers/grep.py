@@ -96,11 +96,14 @@ class grep(BaseConsumer):
         self._target_domains = None
         self._log_queue_sizes_calls = 0
 
-        self._consumer_plugin_dict = dict((plugin.get_name(), plugin) for plugin in self._consumer_plugins)
+        self._consumer_plugin_dict = {
+            plugin.get_name(): plugin for plugin in self._consumer_plugins
+        }
+
         self._first_plugin_name = self._consumer_plugin_dict.keys()[0]
 
         self._request_response_lru = SynchronizedLRUDict(thread_pool_size * 3)
-        self._request_response_processes = dict()
+        self._request_response_processes = {}
         self._response_cache_key_cache = ResponseCacheKeyCache()
 
         self._should_grep_stats = {
@@ -121,7 +124,7 @@ class grep(BaseConsumer):
         om.out.debug(msg % len(self._consumer_plugins))
 
         for plugin in self._consumer_plugins:
-            om.out.debug('Calling %s.end()' % plugin.get_name())
+            om.out.debug(f'Calling {plugin.get_name()}.end()')
             start_time = time.time()
 
             try:
@@ -150,8 +153,8 @@ class grep(BaseConsumer):
             args = (spent_time, plugin.get_name())
             om.out.debug(msg % args)
 
-        self._consumer_plugins = dict()
-        self._consumer_plugin_dict = dict()
+        self._consumer_plugins = {}
+        self._consumer_plugin_dict = {}
         self._response_cache_key_cache.clear_cache()
 
         om.out.debug('Finished Grep consumer _teardown()')
@@ -432,10 +435,7 @@ class grep(BaseConsumer):
         return True
 
     def _print_should_grep_stats(self):
-        total = 0
-
-        for key in self._should_grep_stats:
-            total += self._should_grep_stats[key]
+        total = sum(self._should_grep_stats[key] for key in self._should_grep_stats)
 
         if (total % self.REPORT_GREP_STATS_EVERY) != 0:
             return

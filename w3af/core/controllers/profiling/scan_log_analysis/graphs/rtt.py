@@ -14,8 +14,7 @@ def get_rtt_data(scan_log_filename, scan):
     rtt_timestamps = []
 
     for line in scan:
-        match = RTT_RE.search(line)
-        if match:
+        if match := RTT_RE.search(line):
             rtt.append(float(match.group(1)))
             rtt_timestamps.append(get_line_epoch(line))
 

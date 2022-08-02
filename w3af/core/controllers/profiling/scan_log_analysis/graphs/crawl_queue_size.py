@@ -16,8 +16,7 @@ def get_queue_size_crawl_data(scan_log_filename, scan):
     crawl_queue_timestamps = []
 
     for line in scan:
-        match = CRAWLINFRA_DISK_DICT.search(line)
-        if match:
+        if match := CRAWLINFRA_DISK_DICT.search(line):
             crawl_queue_sizes.append(int(match.group(1)))
             crawl_queue_timestamps.append(get_line_epoch(line))
 
@@ -38,7 +37,7 @@ def draw_queue_size_crawl(scan_log_filename, scan):
         return
 
     print('Crawl consumer queue size')
-    print('    Latest queue size value: %s' % crawl_queue_sizes[-1])
+    print(f'    Latest queue size value: {crawl_queue_sizes[-1]}')
     print('')
 
     fig = plotille.Figure()

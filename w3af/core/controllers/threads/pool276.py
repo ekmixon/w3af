@@ -85,7 +85,7 @@ class MaybeEncodingError(Exception):
                                                              self.exc)
 
     def __repr__(self):
-        return "<MaybeEncodingError: %s>" % str(self)
+        return f"<MaybeEncodingError: {str(self)}>"
 
 
 class DetailedMaybeEncodingError(MaybeEncodingError):
@@ -177,11 +177,11 @@ def create_detailed_pickling_error(exception, instance):
         # Use enumerate to name the items in the list
         for i, v in enumerate(instance):
             if not can_pickle(v):
-                attribute = 'index-%s' % i
+                attribute = f'index-{i}'
                 break
 
     wrapped = DetailedMaybeEncodingError(exception, instance, attribute)
-    debug("Possible encoding error while sending result: %s" % wrapped)
+    debug(f"Possible encoding error while sending result: {wrapped}")
     return wrapped
 
 
@@ -271,7 +271,7 @@ class Pool(object):
                 'result_handler': result_is_active}
 
     def get_pool_queue_sizes(self):
-        result = dict()
+        result = {}
 
         if self._inqueue is not None:
             result['inqueue_size'] = self._inqueue.qsize()
@@ -300,7 +300,7 @@ class Pool(object):
         """Bring the number of pool processes up to the specified number,
         for use after reaping workers which have exited.
         """
-        for i in range(self._processes - len(self._pool)):
+        for _ in range(self._processes - len(self._pool)):
             w = self.Process(target=worker,
                              args=(self._inqueue, self._outqueue,
                                    self._initializer,
@@ -532,7 +532,7 @@ class Pool(object):
             # attempts to add the sentinel (None) to outqueue may
             # block.  There is guaranteed to be no more than 2 sentinels.
             try:
-                for i in range(10):
+                for _ in range(10):
                     if not outqueue._reader.poll():
                         break
                     get()
@@ -546,10 +546,10 @@ class Pool(object):
     def _get_tasks(func, it, size):
         it = iter(it)
         while 1:
-            x = tuple(itertools.islice(it, size))
-            if not x:
+            if x := tuple(itertools.islice(it, size)):
+                yield (func, x)
+            else:
                 return
-            yield (func, x)
 
     def __reduce__(self):
         raise NotImplementedError(
@@ -760,18 +760,17 @@ class IMapIterator(object):
     def next(self, timeout=None):
         self._cond.acquire()
         try:
+            item = self._items.popleft()
+        except IndexError:
+            if self._index == self._length:
+                raise StopIteration
+            self._cond.wait(timeout)
             try:
                 item = self._items.popleft()
             except IndexError:
                 if self._index == self._length:
                     raise StopIteration
-                self._cond.wait(timeout)
-                try:
-                    item = self._items.popleft()
-                except IndexError:
-                    if self._index == self._length:
-                        raise StopIteration
-                    raise TimeoutError
+                raise TimeoutError
         finally:
             self._cond.release()
 

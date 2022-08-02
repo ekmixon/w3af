@@ -30,5 +30,5 @@ def get_wivet_http(path='/'):
     except IOError:
         wivet_netloc = DEFAULT_WIVET
 
-    return 'http://%s%s' % (wivet_netloc, path)
+    return f'http://{wivet_netloc}{path}'
 

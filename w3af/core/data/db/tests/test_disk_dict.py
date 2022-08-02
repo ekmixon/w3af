@@ -74,7 +74,7 @@ class TestDiskDict(unittest.TestCase):
         disk_dict['b'] = 'abc'
         disk_dict['c'] = 'abc'
 
-        self.assertEqual(set(disk_dict.keys()), set(['a', 'b', 'c']))
+        self.assertEqual(set(disk_dict.keys()), {'a', 'b', 'c'})
 
     def test_del(self):
         disk_dict = DiskDict()
@@ -97,7 +97,7 @@ class TestDiskDict(unittest.TestCase):
 
         start = time.time()
 
-        for i in xrange(10000):
+        for _ in xrange(10000):
             len(disk_dict)
 
         end = time.time()
@@ -122,7 +122,7 @@ class TestDiskDict(unittest.TestCase):
         disk_dict['b'] = 'abc'
         disk_dict['c'] = 'abc'
 
-        self.assertEqual(set(disk_dict.iterkeys()), set(['a', 'b', 'c']))
+        self.assertEqual(set(disk_dict.iterkeys()), {'a', 'b', 'c'})
 
     def test_remove_table(self):
         disk_dict = DiskDict()

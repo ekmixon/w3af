@@ -63,24 +63,24 @@ class TestGitClient(unittest.TestCase):
         # if we don't take that into account
         if get_current_branch().startswith('jenkins-'):
             raise SkipTest('Workaround for Jenkins Git plugin wierdness.')
-        
+
         client = GitClient(W3AF_LOCAL_PATH)
         # I don't really want to wait for the local repo to update itself
         # using "git fetch", so I simply put this as a mock
         client.fetch = MagicMock()
-        
+
         remote_head = client.get_remote_head_id()
         client.fetch.assert_called_once_with()
-                
+
         self.assertEqual(len(remote_head), 40)
         self.assertIsInstance(remote_head, basestring)
-        
+
         # Get the ID using an alternative way for double checking
-        branch = 'refs/remotes/origin/%s' % get_current_branch()
+        branch = f'refs/remotes/origin/{get_current_branch()}'
         proc = subprocess.Popen(['git', 'for-each-ref', branch], stdout=subprocess.PIPE)
         commit_id_line = proc.stdout.readline()
         commit_id_line = commit_id_line.strip()
         commit_id, _ = commit_id_line.split(' ')
-        
+
         self.assertEqual(remote_head, commit_id)
         

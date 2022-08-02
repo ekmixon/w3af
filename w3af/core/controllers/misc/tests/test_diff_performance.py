@@ -86,11 +86,7 @@ class TestDiffPerformance(unittest.TestCase):
             large_file_1 += '\n'
 
         for i in xrange(_max):
-            if i == _max - 3:
-                large_file_2 += 'B' * i
-            else:
-                large_file_2 += 'A' * i
-
+            large_file_2 += 'B' * i if i == _max - 3 else 'A' * i
             large_file_2 += '\n'
 
         diff(large_file_1, large_file_2)

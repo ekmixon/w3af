@@ -49,10 +49,7 @@ def provides_cors_features(freq, url_opener, debugging_id):
     headers = Headers({'Origin': 'www.w3af.org'}.items())
     response = url_opener.GET(freq.get_url(), headers=headers, debugging_id=debugging_id)
     ac_value = retrieve_cors_header(response, ACCESS_CONTROL_ALLOW_ORIGIN)
-    if ac_value is not None:
-        return True
-
-    return False
+    return ac_value is not None
 
 
 def retrieve_cors_header(response, key):
@@ -65,11 +62,14 @@ def retrieve_cors_header(response, key):
     """
     headers = response.get_headers()
 
-    for header_name in headers:
-        if header_name.upper().strip() == key.upper():
-            return headers[header_name].strip()
-
-    return None
+    return next(
+        (
+            headers[header_name].strip()
+            for header_name in headers
+            if header_name.upper().strip() == key.upper()
+        ),
+        None,
+    )
 
 
 def build_cors_request(url, origin_header_value):
@@ -87,5 +87,4 @@ def build_cors_request(url, origin_header_value):
     if origin_header_value is not None:
         headers["Origin"] = origin_header_value.strip()
 
-    forged_req = FuzzableRequest(url, 'GET', headers=headers)
-    return forged_req
+    return FuzzableRequest(url, 'GET', headers=headers)

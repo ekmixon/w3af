@@ -36,7 +36,7 @@ class TestGithubIssues(unittest.TestCase):
     def test_report(self):
         gh = GithubIssues(OAUTH_TOKEN)
         gh.login()
-        
+
         summary = 'Unittest bug report'
         userdesc = 'Please remove this ticket'
 
@@ -44,7 +44,7 @@ class TestGithubIssues(unittest.TestCase):
         self.assertIsInstance(ticket_id, int)
         self.assertTrue(ticket_url.startswith(
             'https://github.com/andresriancho/w3af/issues/'))
-        
+
         # Remove the ticket I've just created
         gh = Github(OAUTH_TOKEN)
         repo = gh.get_user('andresriancho').get_repo('w3af')
@@ -52,7 +52,7 @@ class TestGithubIssues(unittest.TestCase):
         issue.edit(state='closed')
 
     def test_login_failed_token(self):
-        gh = GithubIssues(OAUTH_TOKEN + 'foobar')
+        gh = GithubIssues(f'{OAUTH_TOKEN}foobar')
         self.assertRaises(OAuthTokenInvalid, gh.login)
 
     def test_login_success_token(self):

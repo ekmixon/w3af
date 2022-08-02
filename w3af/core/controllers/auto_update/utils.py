@@ -88,14 +88,11 @@ def get_current_branch(path=W3AF_LOCAL_PATH):
     :return: The active branch for the repo at "path".
     """
     repo = git.Repo(path)
-    
+
     try:
         name = repo.active_branch.name
-    except IndexError:
+    except (IndexError, TypeError):
         return DETACHED_HEAD
-    except TypeError:
-        return DETACHED_HEAD
-
     return name
 
 
@@ -103,7 +100,4 @@ def repo_has_conflicts(path=W3AF_LOCAL_PATH):
     """
     :return: True if there was any merge conflict with the last pull()
     """
-    for stage, _ in git.Repo(path).index.iter_blobs():
-        if stage != 0:
-            return True
-    return False
+    return any(stage != 0 for stage, _ in git.Repo(path).index.iter_blobs())

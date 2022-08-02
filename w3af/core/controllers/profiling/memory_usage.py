@@ -32,10 +32,7 @@ SAVE_THREAD_PTR = []
 def user_wants_memory_profiling():
     _should_profile = os.environ.get('W3AF_MEMORY_PROFILING', '0')
 
-    if _should_profile.isdigit() and int(_should_profile) == 1:
-        return True
-
-    return False
+    return bool(_should_profile.isdigit() and int(_should_profile) == 1)
 
 
 def should_profile_memory(wrapped):

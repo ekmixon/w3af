@@ -129,10 +129,7 @@ def _get_optimized_fuzzy_equal(a_str, b_str, threshold=0.6):
     if b_len == a_len and a_str == b_str:
         return True
 
-    if threshold > upper_bound_similarity(a_len, b_len):
-        return False
-
-    return None
+    return False if threshold > upper_bound_similarity(a_len, b_len) else None
 
 
 def upper_bound_similarity(a_len, b_len):

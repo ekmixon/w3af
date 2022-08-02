@@ -83,11 +83,12 @@ def get_missing_os_packages(platform, dependency_set):
     """
     Check for missing operating system packages
     """
-    missing_os_packages = []
+    missing_os_packages = [
+        os_package
+        for os_package in platform.SYSTEM_PACKAGES[dependency_set]
+        if not platform.os_package_is_installed(os_package)
+    ]
 
-    for os_package in platform.SYSTEM_PACKAGES[dependency_set]:
-        if not platform.os_package_is_installed(os_package):
-            missing_os_packages.append(os_package)
 
     return list(set(missing_os_packages))
 
@@ -156,7 +157,7 @@ def write_instructions_to_console(platform, failed_deps, os_packages, script_pat
         print('External programs used by w3af are not installed or were not found.'
               'Run these commands to install them on your system:\n')
         for cmd in external_commands:
-            print('    %s' % cmd)
+            print(f'    {cmd}')
 
         print('')
 

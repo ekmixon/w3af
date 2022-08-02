@@ -61,11 +61,10 @@ def get_thread_name(threads_list, thread_id):
     :param thread_id: The ident of the thread we want the name for
     :return: A thread name or None
     """
-    for thread in threads_list:
-        if thread.ident == thread_id:
-            return thread.name
-
-    return None
+    return next(
+        (thread.name for thread in threads_list if thread.ident == thread_id),
+        None,
+    )
 
 
 def dump_thread_stack():

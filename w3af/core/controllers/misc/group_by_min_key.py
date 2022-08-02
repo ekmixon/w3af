@@ -60,16 +60,18 @@ def group_by_min_key(input_list):
     # So, first, we groupby the first item in the tuples
     key = itemgetter(0)
     value = itemgetter(1)
-    res_dict_1 = {}
-    for key, group in groupby(input_list, key):
-        res_dict_1[key] = [value(x) for x in group]
+    res_dict_1 = {
+        key: [value(x) for x in group]
+        for key, group in groupby(input_list, key)
+    }
 
     # Now, we groupby the second item in the tuples
     key = itemgetter(1)
     value = itemgetter(0)
-    res_dict_2 = {}
-    for key, group in groupby(input_list, key):
-        res_dict_2[key] = [value(x) for x in group]
+    res_dict_2 = {
+        key: [value(x) for x in group]
+        for key, group in groupby(input_list, key)
+    }
 
     # Finally we compare which dict has more keys, and return the one with
     # less keys.

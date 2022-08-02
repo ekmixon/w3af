@@ -85,7 +85,7 @@ class TestStrategy(unittest.TestCase):
         Makes sure that the threads which are living in my process are the
         ones that I want.
         """
-        threads = [t for t in threading.enumerate()]
+        threads = list(threading.enumerate())
         thread_names = [t.name for t in threads]
 
         thread_names_set = set(thread_names)

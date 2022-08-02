@@ -49,7 +49,7 @@ class ReverseFTP(BasePayloadTransfer):
         """
         :return: An estimated transfer time for a file with the specified size.
         """
-        return int(3)
+        return 3
 
     def _serve(self, data_str):
         """

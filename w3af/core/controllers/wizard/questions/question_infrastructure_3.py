@@ -36,8 +36,10 @@ class question_infrastructure_3(question):
 
         self._question_title = 'Plugin selection'
 
-        self._question_str = 'This step allows you to select from a group of plugins that'
-        self._question_str += ' fingerprint the remote Web server.'
+        self._question_str = (
+            'This step allows you to select from a group of plugins that'
+            + ' fingerprint the remote Web server.'
+        )
 
     def _get_option_objects(self):
         """
@@ -70,13 +72,9 @@ class question_infrastructure_3(question):
             plugin_list.append('fingerprint_os')
 
         if options_list[self._d2].get_value():
-            plugin_list.append('hmap')
-            plugin_list.append('server_header')
-
+            plugin_list.extend(('hmap', 'server_header'))
         if options_list[self._d3].get_value():
-            plugin_list.append('php_eggs')
-            plugin_list.append('dot_net_errors')
-
+            plugin_list.extend(('php_eggs', 'dot_net_errors'))
         if options_list[self._d4].get_value():
             plugin_list.append('find_vhosts')
 

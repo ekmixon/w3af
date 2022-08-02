@@ -85,7 +85,7 @@ class GithubIssues(object):
         self._user_or_token = user_or_token
         self._password = password
         self.gh = None
-        self.using_oauth = True if password is None else False
+        self.using_oauth = password is None
         
     def login(self):
         try:
@@ -141,20 +141,16 @@ class GithubIssues(object):
         #
         if summary:
             bug_summary = summary
+        elif tback:
+            bug_summary = tback.split('\n')[-2]
         else:
-            # Try to extract the last line from the traceback:
-            if tback:
-                bug_summary = tback.split('\n')[-2]
-            else:
-                # Failed... lets generate something random!
-                m = hashlib.md5()
-                m.update(time.ctime())
-                bug_summary = m.hexdigest()
+            # Failed... lets generate something random!
+            m = hashlib.md5()
+            m.update(time.ctime())
+            bug_summary = m.hexdigest()
 
         # Generate the summary string. Concat 'user_title'
-        summary = '%sBug Report - %s' % (
-            autogen and '[Auto-Generated] ' or '',
-            bug_summary)
+        summary = f"{autogen and '[Auto-Generated] ' or ''}Bug Report - {bug_summary}"
 
         if desc.strip() == DEFAULT_BUG_QUERY_TEXT.strip():
             desc = ''
@@ -165,7 +161,7 @@ class GithubIssues(object):
         #
         if email is not None:
             email_fmt = '\n\nThe user provided the following email address for'\
-                        'contact: %s'
+                            'contact: %s'
             desc += email_fmt % email
 
         # Build details string

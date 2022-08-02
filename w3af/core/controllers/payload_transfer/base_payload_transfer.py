@@ -68,7 +68,7 @@ class BasePayloadTransfer(object):
         :return: True if the file was successfully uploaded.
         """
         if '/etc/passwd' in self._exec_method('md5sum /etc/passwd'):
-            md5sum_res = self._exec_method('md5sum ' + remote_filename)
+            md5sum_res = self._exec_method(f'md5sum {remote_filename}')
             hash_ = md5sum_res.split(' ')[0]
 
             m = hashlib.md5()

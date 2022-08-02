@@ -38,9 +38,7 @@ def is_running(ip, port):
     Given `ip` and `port` determine if a there's a bound webserver instance
     """
     web_server = _get_inst(ip, port)
-    if web_server is None:
-        return False
-    return not web_server.is_down()
+    return False if web_server is None else not web_server.is_down()
 
 
 def _get_inst(ip, port):
@@ -160,7 +158,7 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         I dont want messages to be written to stderr, please write them
         to the om.
         """
-        message = "webserver.py: %s - %s" % (self.address_string(), fmt % args)
+        message = f"webserver.py: {self.address_string()} - {fmt % args}"
         om.out.debug(message)
 
 

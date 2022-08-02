@@ -107,16 +107,10 @@ class Fingerprint404(object):
         if self._is_404_basic(http_response, domain_path):
             return True
 
-        if self._is_404_complex(http_response):
-            return True
-
-        return False
+        return bool(self._is_404_complex(http_response))
 
     def _is_never_404(self, domain_path):
-        if domain_path in cf.cf.get('never_404'):
-            return True
-
-        return False
+        return domain_path in cf.cf.get('never_404')
 
     def _is_404_basic(self, http_response, domain_path):
         """
@@ -133,13 +127,7 @@ class Fingerprint404(object):
         if domain_path in cf.cf.get('always_404'):
             return True
 
-        #
-        # The user configured setting. "If this string is in the response,
-        # then it is a 404"
-        #
-        string_match_404 = cf.cf.get('string_match_404')
-
-        if string_match_404:
+        if string_match_404 := cf.cf.get('string_match_404'):
             if string_match_404 in http_response:
                 return True
 
@@ -169,10 +157,7 @@ class Fingerprint404(object):
         #
         # The following iff fixes the race condition
         #
-        if is_no_content_response(http_response):
-            return True
-
-        return False
+        return bool(is_no_content_response(http_response))
 
     @PreventMultipleThreads
     def _is_404_complex(self, http_response):
@@ -263,44 +248,7 @@ class Fingerprint404(object):
             om.out.debug(msg % args)
             return False
 
-        if len(query.body) < MAX_FUZZY_LENGTH:
-            # The response bodies are fuzzy-equal, and the length is less than
-            # MAX_FUZZY_LENGTH. This is good, it means that they are equal and
-            # long headers / footers in HTTP response bodies are not
-            # interfering with fuzzy-equals.
-            #
-            # Some sites have really large headers and footers which they
-            # include for all pages, including 404s. When that happens one page
-            # might look like:
-            #
-            #   {header-4000bytes}
-            #   Hello world
-            #   {footer-4000bytes}
-            #
-            # The header might contain large CSS and the footer might include
-            # JQuery or some other large JS. Then, the 404 might look like:
-            #
-            #   {header-4000bytes}
-            #   Not found
-            #   {footer-4000bytes}
-            #
-            # A user with a browser might only see the text, and clearly
-            # identify one as a valid page and another as a 404, but the
-            # fuzzy_equal() function will return True, indicating that they
-            # are equal because 99% of the bytes are the same.
-            msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is a 404'
-                   ' [similarity_ratio > %s with 404 DB entry with ID %s]')
-            args = (http_response.get_url(),
-                    http_response.id,
-                    http_response.get_code(),
-                    len(http_response.get_body()),
-                    debugging_id,
-                    IS_EQUAL_RATIO,
-                    known_404.id)
-            om.out.debug(msg % args)
-            return True
-
-        else:
+        if len(query.body) >= MAX_FUZZY_LENGTH:
             # See the large comment above on why we need to check for
             # MAX_FUZZY_LENGTH.
             #
@@ -310,6 +258,41 @@ class Fingerprint404(object):
                                                      query,
                                                      known_404,
                                                      debugging_id)
+        # The response bodies are fuzzy-equal, and the length is less than
+        # MAX_FUZZY_LENGTH. This is good, it means that they are equal and
+        # long headers / footers in HTTP response bodies are not
+        # interfering with fuzzy-equals.
+        #
+        # Some sites have really large headers and footers which they
+        # include for all pages, including 404s. When that happens one page
+        # might look like:
+        #
+        #   {header-4000bytes}
+        #   Hello world
+        #   {footer-4000bytes}
+        #
+        # The header might contain large CSS and the footer might include
+        # JQuery or some other large JS. Then, the 404 might look like:
+        #
+        #   {header-4000bytes}
+        #   Not found
+        #   {footer-4000bytes}
+        #
+        # A user with a browser might only see the text, and clearly
+        # identify one as a valid page and another as a 404, but the
+        # fuzzy_equal() function will return True, indicating that they
+        # are equal because 99% of the bytes are the same.
+        msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is a 404'
+               ' [similarity_ratio > %s with 404 DB entry with ID %s]')
+        args = (http_response.get_url(),
+                http_response.id,
+                http_response.get_code(),
+                len(http_response.get_body()),
+                debugging_id,
+                IS_EQUAL_RATIO,
+                known_404.id)
+        om.out.debug(msg % args)
+        return True
 
     def _handle_large_http_responses(self, http_response, query, known_404, debugging_id):
         """
@@ -334,15 +317,7 @@ class Fingerprint404(object):
         # Make the algorithm easier to read
         known_404_1 = known_404
 
-        if known_404_1.diff is not None:
-            # At some point during the execution of this scan we already sent
-            # an HTTP request to use in this process and calculated the diff
-            #
-            # In order to prevent more HTTP requests from being sent to the
-            # server, and also to reduce CPU usage, we saved the diff as an
-            # attribute.
-            pass
-        else:
+        if known_404_1.diff is None:
             # Need to send the second request and calculate the diff, there is
             # no previous knowledge that we can use
             #

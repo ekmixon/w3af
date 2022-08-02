@@ -196,7 +196,7 @@ class ExactDelayController(object):
                  original wait time.
         """
         delay_str = self.delay_obj.get_string_for_delay(delay)
-        delay_str = delay_str if not reverse else delay_str[::-1]
+        delay_str = delay_str[::-1] if reverse else delay_str
 
         mutant = self.mutant.copy()
         mutant.set_token_value(delay_str)

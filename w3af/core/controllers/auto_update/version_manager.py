@@ -116,17 +116,17 @@ class VersionMgr(object):
         """
         # Registered functions
         self._reg_funcs = {}
-        
+
         msg = ('Checking if a new version is available in our git repository.'
                ' Please wait...')
         self.register(VersionMgr.ON_UPDATE_CHECK, log, msg)
-        
+
         msg = ('Your installation is already on the latest available version.')
         self.register(VersionMgr.ON_ALREADY_LATEST, log, msg)
-        
+
         msg = 'w3af is updating from github.com ...'
         self.register(VersionMgr.ON_UPDATE, log, msg)
-        
+
         msg = ('The third-party dependencies for w3af have changed, please'
                ' exit the framework and run it again to load all changes'
                ' and install any missing modules.')
@@ -180,19 +180,22 @@ class VersionMgr(object):
         """ 
         # Call callback function
         if self.callback_onupdate_confirm is not None:
-            
+
             callback = self.callback_onupdate_confirm
-            
+
             # pylint: disable=E1102
             # pylint: disable=E1103
             msg = 'Your current w3af installation is %s (%s). Do you want '\
-                  'to update to %s (%s)?'
-            proceed_upd = callback(msg % (short_local_head_id,
-                                          get_commit_id_date(local_head_id),
-                                          short_remote_head_id,
-                                          get_commit_id_date(remote_head_id)))
-            
-            return proceed_upd
+                      'to update to %s (%s)?'
+            return callback(
+                msg
+                % (
+                    short_local_head_id,
+                    get_commit_id_date(local_head_id),
+                    short_remote_head_id,
+                    get_commit_id_date(remote_head_id),
+                )
+            )
     
     def __update_impl(self):
         """
@@ -290,9 +293,7 @@ class VersionMgr(object):
         """
         startcfg = self._start_cfg
         # That's it!
-        if not startcfg.auto_upd:
-            return False
-        else:
+        if startcfg.auto_upd:
             freq = startcfg.freq
             diff_days = max((date.today() - startcfg.last_upd).days, 0)
 
@@ -300,7 +301,7 @@ class VersionMgr(object):
                 (freq == StartUpConfig.FREQ_WEEKLY and diff_days > 6) or
                 (freq == StartUpConfig.FREQ_MONTHLY and diff_days > 29)):
                 return True
-            return False
+        return False
 
 
 

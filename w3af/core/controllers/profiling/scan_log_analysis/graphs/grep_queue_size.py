@@ -16,8 +16,7 @@ def get_queue_size_grep_data(scan_log_filename, scan):
     grep_queue_timestamps = []
 
     for line in scan:
-        match = GREP_DISK_DICT.search(line)
-        if match:
+        if match := GREP_DISK_DICT.search(line):
             grep_queue_sizes.append(int(match.group(1)))
             grep_queue_timestamps.append(get_line_epoch(line))
 
@@ -38,7 +37,7 @@ def draw_queue_size_grep(scan_log_filename, scan):
         return
 
     print('Grep consumer queue size')
-    print('    Latest queue size value: %s' % grep_queue_sizes[-1])
+    print(f'    Latest queue size value: {grep_queue_sizes[-1]}')
     print('')
 
     fig = plotille.Figure()

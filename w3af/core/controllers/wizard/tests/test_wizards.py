@@ -70,10 +70,9 @@ class test_wizards(object):
             question = wizard_inst.next()
             if question is None:
                 break
-            else:
-                opt = question.get_option_objects()
-                filled_opt = self._correctly_fill_options(opt)
-                wizard_inst.set_answer(filled_opt)
+            opt = question.get_option_objects()
+            filled_opt = self._correctly_fill_options(opt)
+            wizard_inst.set_answer(filled_opt)
 
     @attr('smoke')
     def _test_wizard_fail(self, wizard_inst):
@@ -87,21 +86,20 @@ class test_wizards(object):
 
             if question is None:
                 break
-            else:
-                opt = question.get_option_objects()
-                try:
-                    filled_opt = self._incorrectly_fill_options(opt)
-                    wizard_inst.set_answer(filled_opt)
-                except BaseFrameworkException:
-                    # Now we correctly fill these values
-                    filled_opt = self._correctly_fill_options(opt)
-                    wizard_inst.set_answer(filled_opt)
-                except Exception:
-                    # The idea is that even when the user puts invalid
-                    # values in the answer, we handle it with a BaseFrameworkException
-                    # and show something to him. If we get here then something
-                    # went wrong
-                    assert False
+            opt = question.get_option_objects()
+            try:
+                filled_opt = self._incorrectly_fill_options(opt)
+                wizard_inst.set_answer(filled_opt)
+            except BaseFrameworkException:
+                # Now we correctly fill these values
+                filled_opt = self._correctly_fill_options(opt)
+                wizard_inst.set_answer(filled_opt)
+            except Exception:
+                # The idea is that even when the user puts invalid
+                # values in the answer, we handle it with a BaseFrameworkException
+                # and show something to him. If we get here then something
+                # went wrong
+                assert False
 
     def _correctly_fill_options(self, option_list):
         """

@@ -44,7 +44,7 @@ class GenericFilterTest(unittest.TestCase):
     def test_bloom_int(self):
         for i in xrange(0, self.CAPACITY):
             self.filter.add(i)
-            
+
         # After understanding a little bit more about how bloom filters work,
         # I decided to comment this line. Given the probabilistic nature of
         # these filters, it might be the case that the length of the filter is
@@ -56,7 +56,7 @@ class GenericFilterTest(unittest.TestCase):
         for i in xrange(0, self.CAPACITY):
             self.assertIn(i, self.filter)
 
-        for i in xrange(0, self.CAPACITY / 2):
+        for _ in xrange(0, self.CAPACITY / 2):
             r = random.randint(self.CAPACITY, self.CAPACITY * 2)
             self.assertNotIn(r, self.filter)
 
@@ -65,7 +65,7 @@ class GenericFilterTest(unittest.TestCase):
         randomly_generated_strings = []
 
         for _ in xrange(0, self.CAPACITY):
-            rnd = ''.join(random.choice(string.letters) for i in xrange(40))
+            rnd = ''.join(random.choice(string.letters) for _ in xrange(40))
             randomly_generated_strings.append(rnd)
             self.filter.add(rnd)
 
@@ -79,19 +79,19 @@ class GenericFilterTest(unittest.TestCase):
             self.assertNotIn(saved_str[::-1], self.filter)
 
     @only_if_subclass
-    def test_bloom_url_objects(self):        
+    def test_bloom_url_objects(self):    
         for i in xrange(0, self.CAPACITY):
-            url_num = URL('http://moth/index%s.html' % i)
+            url_num = URL(f'http://moth/index{i}.html')
             self.filter.add(url_num)
 
         self.assertIn(url_num, self.filter)
 
         for i in string.letters:
-            url_char = URL('http://moth/index%s.html' % i)
+            url_char = URL(f'http://moth/index{i}.html')
             self.assertNotIn(url_char, self.filter)
 
         for i in xrange(self.CAPACITY, self.CAPACITY * 2):
-            url_char = URL('http://moth/index%s.html' % i)
+            url_char = URL(f'http://moth/index{i}.html')
             self.assertNotIn(url_char, self.filter)
 
     @only_if_subclass

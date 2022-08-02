@@ -32,8 +32,7 @@ def show_progress_delta(scan_log_filename, scan):
         if 'seconds to join' not in line:
             continue
 
-        match = JOIN_TIMES.search(line)
-        if match:
+        if match := JOIN_TIMES.search(line):
             if 'audit' in line.lower():
                 audit_end_timestamp = get_line_epoch(line)
             if 'grep' in line.lower():
@@ -54,8 +53,7 @@ def show_progress_delta(scan_log_filename, scan):
     grep_progress_timestamps = []
 
     for line in scan:
-        match = CALCULATED_ETA.search(line)
-        if match:
+        if match := CALCULATED_ETA.search(line):
             ts = get_line_epoch(line)
 
             eta = match.group(2)
@@ -91,8 +89,7 @@ def show_progress_delta(scan_log_filename, scan):
     progress_timestamps = []
 
     for line in scan:
-        match = SCAN_PROGRESS.search(line)
-        if match:
+        if match := SCAN_PROGRESS.search(line):
             progress.append(int(match.group(1)))
             progress_timestamps.append(get_line_epoch(line))
 
@@ -105,8 +102,7 @@ def show_progress_delta(scan_log_filename, scan):
     finished_timestamp = None
 
     for line in scan:
-        match = SCAN_FINISHED_IN.search(line)
-        if match:
+        if match := SCAN_FINISHED_IN.search(line):
             finished_timestamp = get_line_epoch(line)
 
     finished_timestamp = finished_timestamp or get_last_timestamp(scan)
@@ -132,15 +128,17 @@ def show_progress_delta(scan_log_filename, scan):
                  label='Crawl (estimated)')
 
         crawl_real_spent = int(crawl_end_timestamp) - int(first_timestamp)
-        crawl_real_progress_timestamps = range(int(first_timestamp),
-                                               int(crawl_end_timestamp),
-                                               1)
+        crawl_real_progress_timestamps = range(
+            int(first_timestamp), int(crawl_end_timestamp)
+        )
+
         crawl_real_progress_timestamps = [ts - first_timestamp for ts in crawl_real_progress_timestamps]
 
-        crawl_real_progress = []
+        crawl_real_progress = [
+            float(ts) / crawl_real_spent * 100
+            for ts in crawl_real_progress_timestamps
+        ]
 
-        for ts in crawl_real_progress_timestamps:
-            crawl_real_progress.append(float(ts) / crawl_real_spent * 100)
 
         fig.plot(crawl_real_progress_timestamps,
                  crawl_real_progress,
@@ -167,15 +165,17 @@ def show_progress_delta(scan_log_filename, scan):
                  label='Audit (estimated)')
 
         audit_real_spent = int(audit_end_timestamp) - int(first_timestamp)
-        audit_real_progress_timestamps = range(int(first_timestamp),
-                                               int(audit_end_timestamp),
-                                               1)
+        audit_real_progress_timestamps = range(
+            int(first_timestamp), int(audit_end_timestamp)
+        )
+
         audit_real_progress_timestamps = [ts - first_timestamp for ts in audit_real_progress_timestamps]
 
-        audit_real_progress = []
+        audit_real_progress = [
+            float(ts) / audit_real_spent * 100
+            for ts in audit_real_progress_timestamps
+        ]
 
-        for ts in audit_real_progress_timestamps:
-            audit_real_progress.append(float(ts) / audit_real_spent * 100)
 
         fig.plot(audit_real_progress_timestamps,
                  audit_real_progress,
@@ -202,15 +202,17 @@ def show_progress_delta(scan_log_filename, scan):
                  label='Grep (estimated)')
 
         grep_real_spent = int(grep_end_timestamp) - int(first_timestamp)
-        grep_real_progress_timestamps = range(int(first_timestamp),
-                                              int(grep_end_timestamp),
-                                              1)
+        grep_real_progress_timestamps = range(
+            int(first_timestamp), int(grep_end_timestamp)
+        )
+
         grep_real_progress_timestamps = [ts - first_timestamp for ts in grep_real_progress_timestamps]
 
-        grep_real_progress = []
+        grep_real_progress = [
+            float(ts) / grep_real_spent * 100
+            for ts in grep_real_progress_timestamps
+        ]
 
-        for ts in grep_real_progress_timestamps:
-            grep_real_progress.append(float(ts) / grep_real_spent * 100)
 
         fig.plot(grep_real_progress_timestamps,
                  grep_real_progress,

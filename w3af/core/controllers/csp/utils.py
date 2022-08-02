@@ -95,7 +95,7 @@ def site_protected_against_xss_by_csp(response,
     :return: True only if the site is protected, False otherwise.  
     """
     protected = True
-    
+
     if not provides_csp_features(response):
         protected = False
     else:
@@ -111,7 +111,7 @@ def site_protected_against_xss_by_csp(response,
                 protected = False
             if not allow_unsafe_eval and unsafe_eval_enabled(response):
                 protected = False
-    
+
     return protected
 
 
@@ -129,16 +129,16 @@ def find_vulns(response):
              Access example: vulns[CSP_DIRECTIVE_DEFAULT][0].desc
     """
     vulns = {}
-    
+
     # Extract and merge all policies
     non_report_only_policies = retrieve_csp_policies(response, False, True)
     report_only_policies = retrieve_csp_policies(response, True, True)
     policies_all = merge_policies_dict(non_report_only_policies, report_only_policies)
-    
+
     # Quick exit to enhance performance
     if len(policies_all) == 0:
         return vulns
-        
+
     # Analyze each policy in details.
     # Code analyse each directive independently in order to prepare algorithm to
     # be enhanced with CSP specs evolution !
@@ -151,25 +151,25 @@ def find_vulns(response):
             vulns_lst = [csp_vuln]
             vulns[CSP_DIRECTIVE_DEFAULT] = vulns_lst
     # Directive "script-src"
-    if CSP_DIRECTIVE_SCRIPT in policies_all:        
+    if CSP_DIRECTIVE_SCRIPT in policies_all:
         directive_values = policies_all[CSP_DIRECTIVE_SCRIPT]
         vulns_lst = []
-        warn_msg = ""        
+        warn_msg = ""
         # We do not check for 'unsafe-inline' and 'unsafe-eval' values because:
         # =>Many site use inline javascript code block
         # =>Some popular javascript API (ex: JQueryUI/ExtJS) use eval() function
         if "*" in directive_values:
             warn_msg = "Directive 'script-src' allows all javascript sources."
             csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-            vulns_lst.append(csp_vuln)   
+            vulns_lst.append(csp_vuln)
         if CSP_DIRECTIVE_SCRIPT_NONCE not in policies_all:
             warn_msg = ("Directive 'script-src' is defined but no directive"
                         " 'script-nonce' is defined to protect javascript"
                         " resources.")
             csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-            vulns_lst.append(csp_vuln)                
-        if len(vulns_lst) > 0:
-            vulns[CSP_DIRECTIVE_SCRIPT] = vulns_lst            
+            vulns_lst.append(csp_vuln)
+        if vulns_lst:
+            vulns[CSP_DIRECTIVE_SCRIPT] = vulns_lst
     # Directive "object-src"
     if CSP_DIRECTIVE_OBJECT in policies_all:        
         directive_values = policies_all[CSP_DIRECTIVE_OBJECT]
@@ -203,7 +203,7 @@ def find_vulns(response):
             vulns_lst = [csp_vuln]
             vulns[CSP_DIRECTIVE_MEDIA] = vulns_lst
     # Directive "frame-src"
-    if CSP_DIRECTIVE_FRAME in policies_all:        
+    if CSP_DIRECTIVE_FRAME in policies_all:
         directive_values = policies_all[CSP_DIRECTIVE_FRAME]
         vulns_lst = []
         warn_msg = ""
@@ -216,8 +216,8 @@ def find_vulns(response):
             "'sandbox' is defined to protect resources. Perhaps sandboxing " \
             "is defined at html attribute level ?"
             csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-            vulns_lst.append(csp_vuln)                
-        if len(vulns_lst) > 0:
+            vulns_lst.append(csp_vuln)
+        if vulns_lst:
             vulns[CSP_DIRECTIVE_FRAME] = vulns_lst
     # Directive "font-src"
     if CSP_DIRECTIVE_FONT in policies_all:        
@@ -242,9 +242,9 @@ def find_vulns(response):
             csp_vuln = CSPVulnerability("Directive 'form-action' allows all action target.",
                                         severity.HIGH)               
             vulns_lst = [csp_vuln]                                    
-            vulns[CSP_DIRECTIVE_FORM] = vulns_lst  
+            vulns[CSP_DIRECTIVE_FORM] = vulns_lst
     # Directive "sandbox"
-    if CSP_DIRECTIVE_SANDBOX in policies_all:        
+    if CSP_DIRECTIVE_SANDBOX in policies_all:
         directive_values = policies_all[CSP_DIRECTIVE_SANDBOX]
         warn_msg = ""
         vulns_lst = []
@@ -258,28 +258,30 @@ def find_vulns(response):
             CSP_DIRECTIVE_VALUE_ALLOW_TOP_NAV in directive_values):
             csp_vuln = CSPVulnerability("Directive 'sandbox' apply no restrictions.",
                                         severity.HIGH)            
-            vulns_lst.append(csp_vuln) 
+            vulns_lst.append(csp_vuln)
         # Search invalid directive values
-        valid_values = []
-        valid_values.append("")
-        valid_values.append("allow-*")
-        valid_values.append(CSP_DIRECTIVE_VALUE_ALLOW_FORMS)
-        valid_values.append(CSP_DIRECTIVE_VALUE_ALLOW_SAME_ORIGIN)
-        valid_values.append(CSP_DIRECTIVE_VALUE_ALLOW_SCRIPTS)
-        valid_values.append(CSP_DIRECTIVE_VALUE_ALLOW_TOP_NAV)
+        valid_values = [
+            "",
+            "allow-*",
+            CSP_DIRECTIVE_VALUE_ALLOW_FORMS,
+            CSP_DIRECTIVE_VALUE_ALLOW_SAME_ORIGIN,
+            CSP_DIRECTIVE_VALUE_ALLOW_SCRIPTS,
+            CSP_DIRECTIVE_VALUE_ALLOW_TOP_NAV,
+        ]
+
         for value in directive_values:
             if value not in valid_values:
                 warn_msg = "Directive 'sandbox' specify invalid value: "\
                 "'" + value + "'."
                 csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-                vulns_lst.append(csp_vuln)                
-        if len(vulns_lst) > 0:
-            vulns[CSP_DIRECTIVE_SANDBOX] = vulns_lst                     
+                vulns_lst.append(csp_vuln)
+        if vulns_lst:
+            vulns[CSP_DIRECTIVE_SANDBOX] = vulns_lst
     # Directive "script-nonce"
-    if CSP_DIRECTIVE_SCRIPT_NONCE in policies_all:        
+    if CSP_DIRECTIVE_SCRIPT_NONCE in policies_all:
         directive_values = policies_all[CSP_DIRECTIVE_SCRIPT_NONCE]
         warn_msg = ""
-        vulns_lst = []        
+        vulns_lst = []
         # Search invalid directive values
         for nonce in directive_values:            
             if len(nonce.strip()) == 0:
@@ -291,29 +293,29 @@ def find_vulns(response):
                 warn_msg = "Directive 'script-nonce' is defined "\
                            "but nonce contains invalid character (','|';')."
                 csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-                vulns_lst.append(csp_vuln)                                             
-        if len(vulns_lst) > 0:
-            vulns[CSP_DIRECTIVE_SCRIPT_NONCE] = vulns_lst                 
+                vulns_lst.append(csp_vuln)
+        if vulns_lst:
+            vulns[CSP_DIRECTIVE_SCRIPT_NONCE] = vulns_lst
     # Directive "plugin-types"
-    if CSP_DIRECTIVE_PLUGIN_TYPES in policies_all:        
+    if CSP_DIRECTIVE_PLUGIN_TYPES in policies_all:
         directive_values = policies_all[CSP_DIRECTIVE_PLUGIN_TYPES]
         warn_msg = ""
-        vulns_lst = []        
+        vulns_lst = []
         if "*" in directive_values:
             warn_msg = "Directive 'plugin-types' allows all plugins types."
             csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-            vulns_lst.append(csp_vuln)            
+            vulns_lst.append(csp_vuln)
         # Search invalid directive values
         for mtype in directive_values:
             if mtype != "*" and mtype.lower() not in MIME_TYPES:
                 warn_msg = "Directive 'plugin-types' specify invalid mime " \
                            "type: '" + mtype + "'."
                 csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-                vulns_lst.append(csp_vuln)              
-        if len(vulns_lst) > 0:
-            vulns[CSP_DIRECTIVE_PLUGIN_TYPES] = vulns_lst                
+                vulns_lst.append(csp_vuln)
+        if vulns_lst:
+            vulns[CSP_DIRECTIVE_PLUGIN_TYPES] = vulns_lst
     # Directive "reflected-xss"
-    if CSP_DIRECTIVE_XSS in policies_all:        
+    if CSP_DIRECTIVE_XSS in policies_all:
         directive_values = policies_all[CSP_DIRECTIVE_XSS]
         warn_msg = ""
         vulns_lst = []
@@ -321,28 +323,33 @@ def find_vulns(response):
             warn_msg = "Directive 'reflected-xss' instruct user agent to "\
                        "disable its active protections against reflected XSS."
             csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-            vulns_lst.append(csp_vuln) 
+            vulns_lst.append(csp_vuln)
         # Search invalid directive values
         valid_values = []
-        valid_values.append(CSP_DIRECTIVE_VALUE_XSS_ALLOW)
-        valid_values.append(CSP_DIRECTIVE_VALUE_XSS_BLOCK)
-        valid_values.append(CSP_DIRECTIVE_VALUE_XSS_FILTER)
+        valid_values.extend(
+            (
+                CSP_DIRECTIVE_VALUE_XSS_ALLOW,
+                CSP_DIRECTIVE_VALUE_XSS_BLOCK,
+                CSP_DIRECTIVE_VALUE_XSS_FILTER,
+            )
+        )
+
         for value in directive_values:
             if value not in valid_values:
                 warn_msg = "Directive 'reflected-xss' specify invalid value: "\
                 "'" + value + "'."
                 csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
                 vulns_lst.append(csp_vuln)
-        if len(vulns_lst) > 0:
+        if vulns_lst:
             vulns[CSP_DIRECTIVE_XSS] = vulns_lst  
-    
+
     # Check if misspelled directives name exists
     if CSP_MISSPELLED_DIRECTIVES in policies_all:        
         directive_values = policies_all[CSP_MISSPELLED_DIRECTIVES]                                                                                      
         warn_msg = "Some directives are misspelled: " + ', '.join(directive_values)
         csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
         vulns[CSP_MISSPELLED_DIRECTIVES] = [csp_vuln]
-                                 
+
     return vulns
 
 
@@ -365,8 +372,10 @@ def unsafe_inline_enabled(response):
             # Apply check only on Script and Style directives in order to be
             # coherent with the W3C Specs, because only theses 2 directives
             # supports the "unsafe-inline" directive value...
-            if (directive_name.lower() != CSP_DIRECTIVE_SCRIPT 
-                and directive_name.lower() != CSP_DIRECTIVE_STYLE):
+            if directive_name.lower() not in [
+                CSP_DIRECTIVE_SCRIPT,
+                CSP_DIRECTIVE_STYLE,
+            ]:
                 continue
             # Iterate on Directive values (normally values here are all URI)
             for directive_value in policies_all[directive_name]:               
@@ -462,7 +471,7 @@ def retrieve_csp_policies(response, select_only_reportonly_policies=False,
     """   
     headers = response.get_headers()
     policies = {}
-    
+
     # List of allowed CSP directive names
     directive_allowed_names = [CSP_DIRECTIVE_DEFAULT, CSP_DIRECTIVE_SCRIPT,
                                CSP_DIRECTIVE_OBJECT, CSP_DIRECTIVE_STYLE,
@@ -477,20 +486,21 @@ def retrieve_csp_policies(response, select_only_reportonly_policies=False,
 
     # Misspelled directives name list
     misspelled_directives_name = []
-         
+
     for header_name in headers:
         header_name_upperstrip = header_name.upper().strip()
         # Define header processing condition according to
         # "select_only_reportonly_policies" parameter value
-        if not select_only_reportonly_policies:
-            if (header_name_upperstrip != CSP_HEADER_W3C.upper() 
-                and header_name_upperstrip != CSP_HEADER_FIREFOX.upper() 
-                and header_name_upperstrip != CSP_HEADER_CHROME.upper() 
-                and header_name_upperstrip != CSP_HEADER_IE.upper()):
-                continue
-        else:
+        if select_only_reportonly_policies:
             if header_name_upperstrip != CSP_HEADER_W3C_REPORT_ONLY.upper():
-                continue                              
+                continue
+        elif header_name_upperstrip not in [
+            CSP_HEADER_W3C.upper(),
+            CSP_HEADER_FIREFOX.upper(),
+            CSP_HEADER_CHROME.upper(),
+            CSP_HEADER_IE.upper(),
+        ]:
+            continue
         # Process header value
         # Retrieve the CSP directive list : A Policy is defined by a directive
         # name and one or several associated values
@@ -540,15 +550,14 @@ def retrieve_csp_policies(response, select_only_reportonly_policies=False,
                 # Avoid empty value
                 if len(tmp_value.strip()) > 0:             			
                     policies[directive_name].append(tmp_value)
-    
+
     # Do cleanup: Remove directive name without any policies
-    policies = dict((k, v) for k, v in policies.iteritems() if len(v) > 0)
-    
+    policies = {k: v for k, v in policies.iteritems() if len(v) > 0}
+
     # Add misspelled directives names list if dedicated flag is set
-    if (select_also_misspelled_directives 
-        and len(misspelled_directives_name) > 0):
+    if select_also_misspelled_directives and misspelled_directives_name:
         policies[CSP_MISSPELLED_DIRECTIVES] = misspelled_directives_name
-                    
+
     return policies
 
 
@@ -572,7 +581,7 @@ def merge_policies_dict(non_report_only_policies_dict, report_only_policies_dict
     if(report_only_policies_dict is None 
        or len(report_only_policies_dict) == 0):
         return non_report_only_policies_dict
-    
+
     merged_policies = {}
     # Create a list from union of directives names (remove duplicate items)
     directives_names = list(set(non_report_only_policies_dict.keys() 
@@ -603,14 +612,13 @@ def _contains_special_directive(directive_definition):
 
     if len(directive_definition.strip()) == 0:
         return False
-    
+
     # List of directives for which empty value is a behavior specification
     special_directive_names = [CSP_DIRECTIVE_SANDBOX,
                                CSP_DIRECTIVE_SCRIPT_NONCE]
 
     tmp = directive_definition.lower()
-    for special_directive in special_directive_names:
-        if special_directive in tmp:
-            return True
-    
-    return False
+    return any(
+        special_directive in tmp
+        for special_directive in special_directive_names
+    )

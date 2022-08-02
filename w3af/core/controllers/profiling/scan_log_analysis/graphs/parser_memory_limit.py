@@ -17,8 +17,7 @@ def get_parser_process_memory_limit_data(scan_log_filename, scan):
     memory_limit_timestamps = []
 
     for line in scan:
-        match = PARSER_PROCESS_MEMORY_LIMIT.search(line)
-        if match:
+        if match := PARSER_PROCESS_MEMORY_LIMIT.search(line):
             memory_limit.append(int(match.group(1)))
             memory_limit_timestamps.append(get_line_epoch(line))
 
@@ -27,9 +26,11 @@ def get_parser_process_memory_limit_data(scan_log_filename, scan):
 
 def get_parser_process_memory_limit_summary(scan_log_filename, scan):
     memory_limit, _ = get_parser_process_memory_limit_data(scan_log_filename, scan)
-    return KeyValueOutput('parser_process_memory_limit',
-                          'Latest memory limit',
-                          '%s MB' % memory_limit[-1])
+    return KeyValueOutput(
+        'parser_process_memory_limit',
+        'Latest memory limit',
+        f'{memory_limit[-1]} MB',
+    )
 
 
 def draw_parser_process_memory_limit(scan_log_filename, scan):

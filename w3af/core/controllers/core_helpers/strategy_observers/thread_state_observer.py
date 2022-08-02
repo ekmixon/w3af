@@ -162,7 +162,10 @@ class ThreadStateObserver(StrategyObserver):
             # Now the real deal
             #
             if pool is None:
-                self.write_to_log('The %s consumer finished all tasks and closed the pool.' % name)
+                self.write_to_log(
+                    f'The {name} consumer finished all tasks and closed the pool.'
+                )
+
                 self.write_to_log('100%% of %s workers are idle.' % name)
                 break
 
@@ -223,9 +226,10 @@ class ThreadStateObserver(StrategyObserver):
             if worker_id not in workers_to_inspect:
                 continue
 
-            trace = []
-            for filename, lineno, name, line in traceback.extract_stack(frame):
-                trace.append('%s:%s @ %s()' % (filename, lineno, name))
+            trace = [
+                f'{filename}:{lineno} @ {name}()'
+                for filename, lineno, name, line in traceback.extract_stack(frame)
+            ]
 
             trace = trace[-10:]
             trace = ', '.join(trace)
@@ -285,7 +289,7 @@ class ThreadStateObserver(StrategyObserver):
         name = pool.worker_names
 
         if not len(inspect_data):
-            self.write_to_log('No pool workers at %s.' % (name,))
+            self.write_to_log(f'No pool workers at {name}.')
             return
 
         #
@@ -355,7 +359,7 @@ class ThreadStateObserver(StrategyObserver):
 
             trace = worker_state.get('trace', None)
             if trace is not None:
-                message += '. Function call tree: %s' % trace
+                message += f'. Function call tree: {trace}'
 
             self.write_to_log(message)
 

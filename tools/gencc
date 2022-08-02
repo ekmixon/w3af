@@ -118,24 +118,21 @@ def completed_number(prefix, length):
     checkdigit = ((sum / 10 + 1) * 10 - sum) % 10
 
     ccnumber.append( str(checkdigit) )
-    
+
     return ''.join(ccnumber)
 
 def credit_card_number(generator, prefixList, length, howMany):
 
     result = []
 
-    for i in range(howMany):
+    for _ in range(howMany):
         ccnumber = copy.copy( generator.choice(prefixList) )
         result.append( completed_number(ccnumber, length) )
 
     return result
 
 def output(title, numbers):
-    result = []
-    result.append('Generated ' + title + ' card:')
-    result.append( '\n'.join(numbers) )
-    result.append( '' )
+    result = [f'Generated {title} card:', '\n'.join(numbers), '']
     return '\n'.join(result).strip()
 
 generator = Random()
@@ -150,7 +147,7 @@ def usage():
     print('    -h  Print this help message.')
     print('    -t  Type of CC to generate:')
     for type in types:
-        print('        - ' + type)
+        print(f'        - {type}')
     print('')
 
 #

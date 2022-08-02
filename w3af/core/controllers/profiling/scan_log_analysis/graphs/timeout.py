@@ -15,8 +15,7 @@ def get_timeout_data(scan_log_filename, scan):
     timeout_timestamps = []
 
     for line in scan:
-        match = SOCKET_TIMEOUT.search(line)
-        if match:
+        if match := SOCKET_TIMEOUT.search(line):
             timeouts.append(float(match.group(1)))
             timeout_timestamps.append(get_line_epoch(line))
 

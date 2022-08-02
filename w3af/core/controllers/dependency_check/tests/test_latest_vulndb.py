@@ -49,12 +49,10 @@ class TestLatestVulnDB(unittest.TestCase):
                 # but who knows if its guaranteed in the API?
                 # Make sure we grab the highest version:
                 newest = get_highest_version(versions)
-                if newest != dist.version:
-
-                    # We may have newer than what PyPI knows about
-                    if pkg_resources.parse_version(dist.version) < \
-                    pkg_resources.parse_version(newest):
-                        found = True
+                if newest != dist.version and pkg_resources.parse_version(
+                    dist.version
+                ) < pkg_resources.parse_version(newest):
+                    found = True
 
         if found:
             self.assertTrue(False, MESSAGE)

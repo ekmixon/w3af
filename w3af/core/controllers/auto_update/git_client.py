@@ -123,11 +123,11 @@ class GitClient(object):
         """
         # Get the latest changes from the remote end
         self.fetch()
-        
-        branch_origin = 'origin/%s' % get_current_branch()
+
+        branch_origin = f'origin/{get_current_branch()}'
         all_refs = self._repo.remotes.origin.refs
         origin_master = [ref for ref in all_refs if ref.name == branch_origin][0]
-        
+
         return origin_master.commit.hexsha
         
     def get_local_head_id(self):

@@ -22,8 +22,4 @@ import sys
 
 
 def is_running_tests():
-    for argv in sys.argv:
-        if 'nosetests' in argv:
-            return True
-
-    return False
+    return any('nosetests' in argv for argv in sys.argv)

@@ -22,12 +22,12 @@ def extract(log_file, http_request_id):
 
     for line in open(log_file):
 
-        request_header = '%sRequest %s - ' % (spacer, http_request_id)
+        request_header = f'{spacer}Request {http_request_id} - '
         if line.startswith(request_header):
             inside_request = True
             continue
 
-        request_header = '%sResponse %s - ' % (spacer, http_request_id)
+        request_header = f'{spacer}Response {http_request_id} - '
         if line.startswith(request_header):
             inside_request = False
             inside_response = True

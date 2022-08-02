@@ -33,10 +33,10 @@ def just_sleep(secs):
 
 def use_memory_in_string(memory):
     block_size = 1024
-    memory_user = ''
+    memory_user = ''.join(
+        block_size * 'A' for _ in xrange(int(memory / block_size))
+    )
 
-    for _ in xrange(int(memory / block_size)):
-        memory_user += block_size * 'A'
 
     return len(memory_user)
 
@@ -105,7 +105,7 @@ class TestPebbleMemoryUsage(unittest.TestCase):
             try:
                 future.result()
             except MemoryError:
-                print('Limit found at %s bytes' % current_len)
+                print(f'Limit found at {current_len} bytes')
                 break
 
         #self.assertGreaterEqual(self.MEMORY_LIMIT * 1.2, current_len)
@@ -174,10 +174,11 @@ class TestPebbleMemoryUsage(unittest.TestCase):
 
         # Use a lot of memory in the parent process
         block_size = 1024
-        memory_user = ''
+        memory_user = ''.join(
+            block_size * 'A'
+            for _ in xrange(int(self.MEMORY_LIMIT * 2.0 / block_size))
+        )
 
-        for _ in xrange(int(self.MEMORY_LIMIT * 2.0 / block_size)):
-            memory_user += block_size * 'A'
 
         # Now do the pool stuff
         pool = self.get_pool_with_memlimit()
@@ -193,7 +194,8 @@ class TestPebbleMemoryUsage(unittest.TestCase):
             self.assertEqual(future.result(), secs)
 
     def get_pool_with_memlimit(self):
-        pool = ProcessPool(initializer=limit_memory_usage,
-                           initargs=[self.MEMORY_LIMIT],
-                           max_workers=3)
-        return pool
+        return ProcessPool(
+            initializer=limit_memory_usage,
+            initargs=[self.MEMORY_LIMIT],
+            max_workers=3,
+        )

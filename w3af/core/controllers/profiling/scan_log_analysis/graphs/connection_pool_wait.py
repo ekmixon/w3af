@@ -17,8 +17,7 @@ def get_connection_pool_wait_data(scan_log_filename, scan):
     connection_pool_timestamps = []
 
     for line in scan:
-        match = CONNECTION_POOL_WAIT.search(line)
-        if match:
+        if match := CONNECTION_POOL_WAIT.search(line):
             connection_pool_waits.append(float(match.group(1)))
             connection_pool_timestamps.append(get_line_epoch(line))
 

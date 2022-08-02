@@ -66,8 +66,8 @@ class DiskList(object):
         """
         self.db = get_default_temp_db_instance()
 
-        prefix = '' if table_prefix is None else ('%s_' % table_prefix)
-        self.table_name = 'disk_list_' + prefix + rand_alpha(30)
+        prefix = '' if table_prefix is None else f'{table_prefix}_'
+        self.table_name = f'disk_list_{prefix}{rand_alpha(30)}'
 
         self.dump = dump
         self.load = load
@@ -80,7 +80,7 @@ class DiskList(object):
                    ('eq_attrs', 'TEXT'),
                    ('pickle', 'BLOB')]
         pks = ['index_']
-        
+
         self.db.create_table(self.table_name, columns, pks)
         self.db.create_index(self.table_name, ['eq_attrs'])
         self.db.commit()
@@ -100,10 +100,7 @@ class DiskList(object):
 
         :return: A string containing the object
         """
-        if self.dump is not None:
-            return self.dump(obj)
-
-        return cpickle_dumps(obj)
+        return self.dump(obj) if self.dump is not None else cpickle_dumps(obj)
 
     def _load(self, serialized_object):
         """
@@ -177,7 +174,7 @@ class DiskList(object):
         # Adding the "limit 1" to the query makes it faster, as it won't
         # have to scan through all the table/index, it just stops on the
         # first match.
-        query = 'SELECT count(*) FROM %s WHERE eq_attrs=? LIMIT 1' % self.table_name
+        query = f'SELECT count(*) FROM {self.table_name} WHERE eq_attrs=? LIMIT 1'
         r = self.db.select_one(query, t)
         return bool(r[0])
 
@@ -191,13 +188,13 @@ class DiskList(object):
         pickled_obj = self._dump(value)
         eq_attrs = self._get_eq_attrs_values(value)
         t = (eq_attrs, pickled_obj)
-        
-        query = "INSERT INTO %s VALUES (NULL, ?, ?)" % self.table_name
+
+        query = f"INSERT INTO {self.table_name} VALUES (NULL, ?, ?)"
         self.db.execute(query, t)
 
     def clear(self):
         assert self._state == OPEN
-        self.db.execute("DELETE FROM %s WHERE 1=1" % self.table_name)
+        self.db.execute(f"DELETE FROM {self.table_name} WHERE 1=1")
 
     def extend(self, value_list):
         """
@@ -216,23 +213,21 @@ class DiskList(object):
         # TODO: How do I make the __iter__ thread safe?
         # How do I avoid loading all items in memory?
         objects = []
-        results = self.db.select('SELECT pickle FROM %s' % self.table_name)
+        results = self.db.select(f'SELECT pickle FROM {self.table_name}')
 
         for r in results:
             obj = self._load(r[0])
             objects.append(obj)
-        
-        for obj in sorted(objects):
-            yield obj
+
+        yield from sorted(objects)
 
     def __iter__(self):
         assert self._state == OPEN
 
         # TODO: How do I make the __iter__ thread safe?
-        results = self.db.select('SELECT pickle FROM %s' % self.table_name)
+        results = self.db.select(f'SELECT pickle FROM {self.table_name}')
         for r in results:
-            obj = self._load(r[0])
-            yield obj
+            yield self._load(r[0])
 
     def __reversed__(self):
         assert self._state == OPEN
@@ -241,26 +236,18 @@ class DiskList(object):
         query = 'SELECT pickle FROM %s ORDER BY index_ DESC'
         results = self.db.select(query % self.table_name)
         for r in results:
-            obj = self._load(r[0])
-            yield obj
+            yield self._load(r[0])
 
     def __getitem__(self, key):
         assert self._state == OPEN
 
         if isinstance(key, slice):
             return self._slice_list(key)
-        
+
         # I need to add 1 to this key because the autoincrement in SQLITE
         # starts counting from 1 instead of 0
-        if key >= 0:
-            index_ = int(key) + 1
-        else:
-            # TODO: There's room for improvement in this code since we could
-            # find a way to avoid the len(self) which generated one more SELECT
-            # statement and is not very nice in terms of performance
-            index_ = len(self) + int(key) + 1
-            
-        query = 'SELECT pickle FROM %s WHERE index_ = ?' % self.table_name
+        index_ = int(key) + 1 if key >= 0 else len(self) + int(key) + 1
+        query = f'SELECT pickle FROM {self.table_name} WHERE index_ = ?'
         try:
             r = self.db.select_one(query, (index_,))
             obj = self._load(r[0])
@@ -275,7 +262,7 @@ class DiskList(object):
         start = slice_inst.start or 0
         stop = slice_inst.stop or len(self)
         step = slice_inst.step or 1
-        
+
         copy = DiskList()
         disk_list_length = len(self)
 
@@ -295,12 +282,12 @@ class DiskList(object):
     def __len__(self):
         assert self._state == OPEN
 
-        query = 'SELECT count(*) FROM %s' % self.table_name
+        query = f'SELECT count(*) FROM {self.table_name}'
         r = self.db.select_one(query)
         return r[0]
 
     def __unicode__(self):
-        return u'<DiskList [%s]>' % ', '.join([unicode(i) for i in self])
+        return f"<DiskList [{', '.join([unicode(i) for i in self])}]>"
     
     __str__ = __unicode__
 

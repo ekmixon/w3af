@@ -33,16 +33,15 @@ def unique_everseen(iterable, key=None):
 
 
 def print_info_console(cmd, stdout, stderr, exit_code, output_fname):
-    fmt = '%s (%s)'
-    logging.info(fmt % (cmd, output_fname))
-    
+    logging.info(f'{cmd} ({output_fname})')
+
     stdout = clean_noise(stdout)
     stderr = clean_noise(stderr)
-    
+
     # Print to the output
     print(stdout)
     print(stderr)
-    
+
     # Write it to the output file
     logging.debug(stdout)
     logging.debug(stderr)
@@ -51,8 +50,8 @@ def print_info_console(cmd, stdout, stderr, exit_code, output_fname):
 def get_run_id(first, last):
     _first = str(first).zfill(4)
     _last = str(last).zfill(4)
-    _hash = hashlib.md5('%s%s' % (first, last)).hexdigest()[:7]
-    return '%s-%s-%s' % (_first, _last, _hash)
+    _hash = hashlib.md5(f'{first}{last}').hexdigest()[:7]
+    return f'{_first}-{_last}-{_hash}'
 
 
 def humanize_time(secs):
@@ -64,7 +63,7 @@ def print_status(start_time, done_list, total_tests, queued_run_ids, executor,
                  exit_codes):
 
     if len(exit_codes) == 0:
-        msg = u'Status: (%s/%s) ' % (len(done_list), total_tests)
+        msg = f'Status: ({len(done_list)}/{total_tests}) '
     else:
         exit_codes = list(set(exit_codes))
         will_fail = False
@@ -77,17 +76,18 @@ def print_status(start_time, done_list, total_tests, queued_run_ids, executor,
             # We have something like [1]
             will_fail = True
 
-        if not will_fail:
-            msg = u'Status: (%s/%s) ✓ ' % (len(done_list), total_tests)
-        else:
-            msg = u'Status: (%s/%s) ✗ ' % (len(done_list), total_tests)
+        msg = (
+            f'Status: ({len(done_list)}/{total_tests}) ✗ '
+            if will_fail
+            else f'Status: ({len(done_list)}/{total_tests}) ✓ '
+        )
 
     logging.warning(msg)
 
     if len(queued_run_ids) <= 3 and queued_run_ids:
         logging.warning('The pending run ids are:')
         for qri in queued_run_ids:
-            logging.warning('    - %s' % qri)
+            logging.warning(f'    - {qri}')
 
         elapsed_time = time.time() - start_time
 
@@ -111,12 +111,14 @@ def print_summary(all_tests, run_tests, ignored_tests):
     Print a summary of how many tests were run, how many are available, and
     which ones are missing.
     """
-    logging.info('%s out of %s tests run' % (len(run_tests._tests),
-                                             len(all_tests._tests)))
-    
+    logging.info(
+        f'{len(run_tests._tests)} out of {len(all_tests._tests)} tests run'
+    )
+
+
     missing = unique_everseen(sorted([test.id() for test in ignored_tests._tests]))
     missing_str = '\n'.join(missing)
-    
+
     msg = 'The following %s tests were NOT run due to selector "%s":\n%s'
     logging.debug(msg % (len(ignored_tests._tests), NOSE_IGNORE_SELECTOR,
                          missing_str))

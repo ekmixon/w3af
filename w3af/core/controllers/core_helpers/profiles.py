@@ -74,25 +74,21 @@ class CoreProfiles(object):
 
         # Save the enabled plugins
         for plugin_type in w3af_plugins.get_plugin_types():
-            enabled_plugins = []
-            for plugin_name in w3af_plugins.get_enabled_plugins(plugin_type):
-                enabled_plugins.append(plugin_name)
+            enabled_plugins = list(w3af_plugins.get_enabled_plugins(plugin_type))
             new_profile.set_enabled_plugins(plugin_type, enabled_plugins)
 
         # Save the plugin options
         for plugin_type in w3af_plugins.get_plugin_types():
             for plugin_name in w3af_plugins.get_enabled_plugins(plugin_type):
-                plugin_options = w3af_plugins.get_plugin_options(plugin_type,
-                                                                 plugin_name)
-                if plugin_options:
+                if plugin_options := w3af_plugins.get_plugin_options(
+                    plugin_type, plugin_name
+                ):
                     new_profile.set_plugin_options(plugin_type,
                                                    plugin_name,
                                                    plugin_options,
                                                    self_contained=self_contained)
 
-        # Save the profile targets
-        targets = cf.cf.get('targets')
-        if targets:
+        if targets := cf.cf.get('targets'):
             new_profile.set_target(' , '.join(t.url_string for t in targets))
 
         # Save the misc and http settings

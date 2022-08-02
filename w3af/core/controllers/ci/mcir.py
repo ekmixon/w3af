@@ -30,7 +30,7 @@ def get_mcir_http(path='/'):
     except IOError:
         mcir_netloc = DEFAULT_MCIR
 
-    return 'http://%s%s' % (mcir_netloc, path)
+    return f'http://{mcir_netloc}{path}'
 
 
 

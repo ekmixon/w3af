@@ -39,10 +39,7 @@ SAVE_THREAD_PTR = []
 def core_profiling_is_enabled():
     env_value = os.environ.get('W3AF_CORE_PROFILING', '0')
 
-    if env_value.isdigit() and int(env_value) == 1:
-        return True
-
-    return False
+    return bool(env_value.isdigit() and int(env_value) == 1)
 
 
 def should_profile_core(wrapped):
@@ -111,7 +108,7 @@ def stop_core_profiling(w3af_core):
 def get_parser_cache_stats():
     import w3af.core.data.parsers.parser_cache as parser_cache
     from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
-    
+
     r = {'hit_rate': parser_cache.dpc.get_hit_rate(),
          'max_lru_items': parser_cache.dpc.get_max_lru_items(),
          'current_lru_size': parser_cache.dpc.get_current_lru_items(),

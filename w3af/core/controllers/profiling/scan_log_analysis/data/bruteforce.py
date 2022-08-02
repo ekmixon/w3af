@@ -17,14 +17,12 @@ def get_bruteforce_data(scan_log_filename, scan):
             continue
 
         for finished_re in FINISHED_BRUTEFORCE:
-            match = finished_re.search(line)
-            if match:
+            if match := finished_re.search(line):
                 took = match.group(1)
                 times.append(took)
 
-    output = KeyValueOutput('bruteforce_performance',
-                            'Time spent brute-forcing',
-                            {'count': len(times),
-                             'times': times})
-
-    return output
+    return KeyValueOutput(
+        'bruteforce_performance',
+        'Time spent brute-forcing',
+        {'count': len(times), 'times': times},
+    )

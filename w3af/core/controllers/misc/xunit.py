@@ -51,21 +51,24 @@ class XunitGen(object):
                                 + self._stats['pass'] + self._stats['skip'])
 
         xml_chunks = [
-            '<?xml version="1.0" encoding="UTF-8"?>'
-            '<testsuite name="w3aftestscripts" tests="%(total)d" '
-            'errors="%(error)d" failures="%(fail)d" skip="%(skip)d">'
-            % self._stats
+            (
+                '<?xml version="1.0" encoding="UTF-8"?>'
+                '<testsuite name="w3aftestscripts" tests="%(total)d" '
+                'errors="%(error)d" failures="%(fail)d" skip="%(skip)d">'
+                % self._stats
+            ),
+            ''.join(self.results),
+            '</testsuite>',
         ]
-        xml_chunks.append(''.join(self.results))
-        xml_chunks.append('</testsuite>')
 
         with open(self.outputfile, 'w') as output:
             output.write(
                 parseString(''.join(xml_chunks)).toprettyxml()
             )
 
-        om.out.information('XML output file was successfuly generated: %s'
-                           % self.outputfile)
+        om.out.information(
+            f'XML output file was successfuly generated: {self.outputfile}'
+        )
 
     def add_failure(self, test, fail, took):
         """

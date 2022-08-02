@@ -95,9 +95,7 @@ def std_exceptions(etype, value, tb):
     sys.excepthook = sys.__excepthook__
     if issubclass(etype, KeyboardInterrupt):
         pass
-    elif issubclass(etype, IOError) and value.errno == errno.EPIPE:
-        pass
-    else:
+    elif not issubclass(etype, IOError) or value.errno != errno.EPIPE:
         sys.__excepthook__(etype, value, tb)
 sys.excepthook = std_exceptions
 
@@ -113,10 +111,7 @@ have_pss = 0
 class Proc:
     def __init__(self):
         uname = os.uname()
-        if uname[0] == "FreeBSD":
-            self.proc = '/compat/linux/proc'
-        else:
-            self.proc = '/proc'
+        self.proc = '/compat/linux/proc' if uname[0] == "FreeBSD" else '/proc'
 
     def path(self, *args):
         return os.path.join(self.proc, *(str(a) for a in args))
@@ -126,8 +121,7 @@ class Proc:
             return open(self.path(*args))
         except (IOError, OSError):
             val = sys.exc_info()[1]
-            if (val.errno == errno.ENOENT or # kernel thread or process gone
-                val.errno == errno.EPERM):
+            if val.errno in [errno.ENOENT, errno.EPERM]:
                 raise LookupError
             raise
 
@@ -180,16 +174,16 @@ def parse_options():
     return (split_args, pids_to_show, watch, only_total)
 
 def help():
-    help_msg = 'Usage: ps_mem [OPTION]...\n' \
-    'Show program core memory usage\n' \
-    '\n' \
-    '  -h, -help                   Show this help\n' \
-    '  -p <pid>[,pid2,...pidN]     Only show memory usage PIDs in the specified list\n' \
-    '  -s, --split-args            Show and separate by, all command line arguments\n' \
-    '  -t, --total                 Show only the total value\n' \
-    '  -w <N>                      Measure and show process memory every N seconds\n'
-
-    return help_msg
+    return (
+        'Usage: ps_mem [OPTION]...\n'
+        'Show program core memory usage\n'
+        '\n'
+        '  -h, -help                   Show this help\n'
+        '  -p <pid>[,pid2,...pidN]     Only show memory usage PIDs in the specified list\n'
+        '  -s, --split-args            Show and separate by, all command line arguments\n'
+        '  -t, --total                 Show only the total value\n'
+        '  -w <N>                      Measure and show process memory every N seconds\n'
+    )
 
 #(major,minor,release)
 def kernel_ver():
@@ -233,13 +227,13 @@ def getMemStats(pid):
                 have_pss = 1
                 Pss_lines.append(line)
         mem_id = digester.hexdigest()
-        Shared = sum([int(line.split()[1]) for line in Shared_lines])
-        Private = sum([int(line.split()[1]) for line in Private_lines])
+        Shared = sum(int(line.split()[1]) for line in Shared_lines)
+        Private = sum(int(line.split()[1]) for line in Private_lines)
         #Note Shared + Private = Rss above
         #The Rss in smaps includes video card mem etc.
         if have_pss:
             pss_adjust = 0.5 # add 0.5KiB as this avg error due to trunctation
-            Pss = sum([float(line.split()[1])+pss_adjust for line in Pss_lines])
+            Pss = sum(float(line.split()[1])+pss_adjust for line in Pss_lines)
             Shared = Pss - Private
     elif (2,6,1) <= kernel_ver() <= (2,6,9):
         Shared = 0 #lots of overestimation, but what can we do?
@@ -264,8 +258,7 @@ def getCmdName(pid, split_args):
         path = path.split('\0')[0]
     except OSError:
         val = sys.exc_info()[1]
-        if (val.errno == errno.ENOENT or # either kernel thread or process gone
-            val.errno == errno.EPERM):
+        if val.errno in [errno.ENOENT, errno.EPERM]:
             raise LookupError
         raise
 
@@ -275,14 +268,10 @@ def getCmdName(pid, split_args):
         path = path[:-10]
         if os.path.exists(path):
             path += " [updated]"
+        elif os.path.exists(cmdline[0]):
+            path = f"{cmdline[0]} [updated]"
         else:
-            #The path could be have prelink stuff so try cmdline
-            #which might have the full path present. This helped for:
-            #/usr/libexec/notification-area-applet.#prelink#.fX7LCT (deleted)
-            if os.path.exists(cmdline[0]):
-                path = cmdline[0] + " [updated]"
-            else:
-                path += " [deleted]"
+            path += " [deleted]"
     exe = os.path.basename(path)
     cmd = proc.open(pid, 'status').readline()[6:-1]
     if exe.startswith(cmd):
@@ -297,21 +286,17 @@ def getCmdName(pid, split_args):
 #The following matches "du -h" output
 #see also human.py
 def human(num, power="Ki", units=None):
-    if units is None:
-        powers = ["Ki", "Mi", "Gi", "Ti"]
-        while num >= 1000: #4 digits
-            num /= 1024.0
-            power = powers[powers.index(power)+1]
-        return "%.1f %sB" % (num, power)
-    else:
+    if units is not None:
         return "%.f" % ((num * 1024) / units)
+    powers = ["Ki", "Mi", "Gi", "Ti"]
+    while num >= 1000: #4 digits
+        num /= 1024.0
+        power = powers[powers.index(power)+1]
+    return "%.1f %sB" % (num, power)
 
 
 def cmd_with_count(cmd, count):
-    if count > 1:
-        return "%s (%u)" % (cmd, count)
-    else:
-        return cmd
+    return "%s (%u)" % (cmd, count) if count > 1 else cmd
 
 #Warn of possible inaccuracies
 #2 = accurate & can total
@@ -323,18 +308,11 @@ def shared_val_accuracy():
     kv = kernel_ver()
     pid = os.getpid()
     if kv[:2] == (2,4):
-        if proc.open('meminfo').read().find("Inact_") == -1:
-            return 1
-        return 0
+        return 1 if proc.open('meminfo').read().find("Inact_") == -1 else 0
     elif kv[:2] == (2,6):
         if os.path.exists(proc.path(pid, 'smaps')):
-            if proc.open(pid, 'smaps').read().find("Pss:")!=-1:
-                return 2
-            else:
-                return 1
-        if (2,6,1) <= kv <= (2,6,9):
-            return -1
-        return 0
+            return 2 if proc.open(pid, 'smaps').read().find("Pss:")!=-1 else 1
+        return -1 if (2,6,1) <= kv <= (2,6,9) else 0
     elif kv[0] > 2 and os.path.exists(proc.path(pid, 'smaps')):
         return 2
     else:
@@ -396,12 +374,9 @@ def get_memory_usage( pids_to_show, split_args, include_self=False, only_self=Fa
             private, shared, mem_id = getMemStats(pid)
         except (RuntimeError, OSError):
             continue #process gone
-        if shareds.get(cmd):
-            if have_pss: #add shared portion of PSS together
-                shareds[cmd] += shared
-            elif shareds[cmd] < shared: #just take largest shared val
-                shareds[cmd] = shared
-        else:
+        if shareds.get(cmd) and have_pss: #add shared portion of PSS together
+            shareds[cmd] += shared
+        elif shareds.get(cmd) and shareds[cmd] < shared or not shareds.get(cmd): #just take largest shared val
             shareds[cmd] = shared
         cmds[cmd] = cmds.setdefault(cmd, 0) + private
         if cmd in count:
@@ -455,13 +430,12 @@ def verify_environment():
         kv = kernel_ver()
     except (IOError, OSError):
         val = sys.exc_info()[1]
-        if val.errno == errno.ENOENT:
-            sys.stderr.write(
-              "Couldn't access " + proc.path('') + "\n"
-              "Only GNU/Linux and FreeBSD (with linprocfs) are supported\n")
-            sys.exit(2)
-        else:
+        if val.errno != errno.ENOENT:
             raise
+        sys.stderr.write(
+          "Couldn't access " + proc.path('') + "\n"
+          "Only GNU/Linux and FreeBSD (with linprocfs) are supported\n")
+        sys.exit(2)
 
 if __name__ == '__main__':
     split_args, pids_to_show, watch, only_total = parse_options()
@@ -480,8 +454,7 @@ if __name__ == '__main__':
                 elif not only_total:
                     print_memory_usage(sorted_cmds, shareds, count, total)
                 time.sleep(watch)
-            else:
-                sys.stdout.write('Process does not exist anymore.\n')
+            sys.stdout.write('Process does not exist anymore.\n')
         except KeyboardInterrupt:
             pass
     else:

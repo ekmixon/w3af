@@ -47,10 +47,7 @@ class payload_transfer_factory(object):
         self._es = extrusionScanner(exec_method)
 
     def estimate_transfer_time(self):
-        if self._es.can_scan():
-            return self._es.estimate_scan_time() + 1
-        else:
-            return 1
+        return self._es.estimate_scan_time() + 1 if self._es.can_scan() else 1
 
     def get_transfer_handler(self, inbound_port=None):
         """

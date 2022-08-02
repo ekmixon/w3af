@@ -12,8 +12,7 @@ def get_file_sizes(scan_log_filename, scan):
     latest_xml_size = None
 
     for line in scan:
-        match = XML_OUTPUT_SIZE.search(line)
-        if match:
+        if match := XML_OUTPUT_SIZE.search(line):
             latest_xml_size = match.group(1)
 
     data = {'debug_log': stat_info.st_size,

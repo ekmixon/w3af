@@ -14,8 +14,7 @@ def get_scan_finished_in(scan_log_filename, scan):
     first_timestamp = get_first_timestamp(scan)
 
     for line in scan:
-        match = SCAN_FINISHED_IN.search(line)
-        if match:
+        if match := SCAN_FINISHED_IN.search(line):
             return KeyValueOutput('scan_time',
                                   'Scan time and state',
                                   {'finished': True,

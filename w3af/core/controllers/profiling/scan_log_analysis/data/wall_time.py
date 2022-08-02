@@ -16,19 +16,19 @@ def show_generic_spent_time(scan, name, must_have):
         if must_have not in line:
             continue
 
-        match = SCAN_TOOK_RE.search(line)
-        if match:
+        if match := SCAN_TOOK_RE.search(line):
             spent_time += float(match.group(1))
 
-    return KeyValueOutput('%s_spent_time' % name,
-                          'Time spent running %s plugins' % name,
-                          {'human': epoch_to_string(spent_time),
-                           'seconds': spent_time})
+    return KeyValueOutput(
+        f'{name}_spent_time',
+        f'Time spent running {name} plugins',
+        {'human': epoch_to_string(spent_time), 'seconds': spent_time},
+    )
 
 
 def get_plugin_time(scan_log_filename, scan):
     scan.seek(0)
-    spent_time_by_plugin = dict()
+    spent_time_by_plugin = {}
 
     for line in scan:
         if 'took' not in line:
@@ -69,7 +69,11 @@ def get_plugin_time(scan_log_filename, scan):
         spent_time_dict = dict(spent_time_items)
 
         # round
-        spent_time_dict = dict((plugin_name, round(took)) for plugin_name, took in spent_time_dict.iteritems())
+        spent_time_dict = {
+            plugin_name: round(took)
+            for plugin_name, took in spent_time_dict.iteritems()
+        }
+
 
         title = 'Top10 wall time used by %s plugins (seconds)'
         output.append(ListOutputItem(title % plugin_type, spent_time_dict))

@@ -69,20 +69,20 @@ class TestTarget(unittest.TestCase):
         ctarget = CoreTarget()
 
         target_file = '/tmp/moth.target'
-        target = 'file://%s' % target_file
-        
+        target = f'file://{target_file}'
+
         target_file_handler = file(target_file, 'w')
         target_file_handler.write('http://moth/1\n')
         target_file_handler.write('http://moth/2\n')
         target_file_handler.close()
-        
+
         options = ctarget.get_options()
         options['target'].set_value(target)
         ctarget.set_options(options)
-        
+
         moth1 = URL_KLASS('http://moth/1')
         moth2 = URL_KLASS('http://moth/2')
-        
+
         self.assertIn(moth1, cf.cf.get('targets'))
         self.assertIn(moth2, cf.cf.get('targets'))
     

@@ -116,8 +116,9 @@ class CalculatedETA(object):
         t_queued = self.queue_size / self.output_speed * self.adjustment_known
         perfect_eta = self.phase_end_timestamp - self.timestamp
 
-        perfect_ratio = perfect_eta - t_queued / ((self.input_speed * t_queued) / self.output_speed)
-        return perfect_ratio
+        return perfect_eta - t_queued / (
+            (self.input_speed * t_queued) / self.output_speed
+        )
 
     def _calculate_perfect_known(self):
         # First we calculate the ETA without the adjustment ratio
@@ -132,8 +133,7 @@ class CalculatedETA(object):
         # known adjustment:
         #
         perfect_eta = self.phase_end_timestamp - self.timestamp
-        perfect_ratio = perfect_eta / eta_no_ratio
-        return perfect_ratio
+        return perfect_eta / eta_no_ratio
 
 
 def create_eta_table(scan):
@@ -170,8 +170,7 @@ def create_eta_table(scan):
         if 'seconds to join' not in line:
             continue
 
-        match = JOIN_TIMES.search(line)
-        if match:
+        if match := JOIN_TIMES.search(line):
             if AUDIT in line.lower():
                 phase_end_timestamps[AUDIT] = get_line_epoch(line) - first_timestamp
             if GREP in line.lower():

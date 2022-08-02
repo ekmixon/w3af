@@ -138,7 +138,7 @@ def generate_console_output(scan_log_filename, scan):
 
         if output is None:
             if not _function.__name__.startswith('draw_'):
-                print('%s returned None' % _function.__name__)
+                print(f'{_function.__name__} returned None')
                 sys.exit(1)
         else:
             output.to_console()

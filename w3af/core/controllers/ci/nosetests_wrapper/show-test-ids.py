@@ -24,7 +24,7 @@ def nose_strategy():
 
     for key, value in nose_data['ids'].iteritems():
         _, _, test_class_method = value
-        print('%s:%s' % (key, test_class_method))
+        print(f'{key}:{test_class_method}')
 
 
 if __name__ == '__main__':

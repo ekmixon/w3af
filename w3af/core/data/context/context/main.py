@@ -33,7 +33,7 @@ def get_context(data, payload):
     """
     :return: A list which contains lists of all contexts where the payload lives
     """
-    return [c for c in get_context_iter(data, payload)]
+    return list(get_context_iter(data, payload))
 
 
 def get_context_iter(data, payload):
@@ -69,9 +69,7 @@ def get_context_iter(data, payload):
         # raise this exception when it encounters an error while parsing.
         return
 
-    for context in context_detector.contexts:
-        yield context
-
+    yield from context_detector.contexts
     # Clear
     context_detector.close()
 
@@ -92,7 +90,7 @@ class ContextDetectorHTMLParser(HTMLParser):
         # We just ignore all the contexts which are inside <noscript>
         if self.noscript_parent:
             return
-        
+
         self.contexts.append(context)
 
     def handle_starttag(self, tag, attrs):
@@ -149,9 +147,8 @@ class ContextDetectorHTMLParser(HTMLParser):
                         HtmlAttrSingleQuote]
 
         for context_klass in all_contexts:
-            attr_match = '%s%s%s' % (context_klass.ATTR_DELIMITER,
-                                     attr_value,
-                                     context_klass.ATTR_DELIMITER)
+            attr_match = f'{context_klass.ATTR_DELIMITER}{attr_value}{context_klass.ATTR_DELIMITER}'
+
             if attr_match in full_tag_text:
                 return context_klass(self.payload,
                                      attr_name,
@@ -159,7 +156,7 @@ class ContextDetectorHTMLParser(HTMLParser):
 
         # Special case for HtmlAttrBackticks
         if attr_value.startswith(HtmlAttrBackticks.ATTR_DELIMITER) and \
-           attr_value.endswith(HtmlAttrBackticks.ATTR_DELIMITER):
+               attr_value.endswith(HtmlAttrBackticks.ATTR_DELIMITER):
             return HtmlAttrBackticks(self.payload,
                                      attr_name,
                                      self.untidy(attr_value))
@@ -188,7 +185,7 @@ class ContextDetectorHTMLParser(HTMLParser):
             self.append_context(CSSText(self.payload,
                                         self.untidy(text_data)))
 
-        elif CONTEXT_DETECTOR in text_data:
+        else:
             self.append_context(HtmlText(self.payload,
                                          self.untidy(text_data)))
 

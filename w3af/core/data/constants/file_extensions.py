@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+
 JAVASCRIPT = {
     'js',
 }
@@ -36,7 +37,6 @@ FLASH = {
 
 IMAGES = {
     'ase',
-    'art',
     'bmp',
     'blp',
     'cd5',
@@ -47,21 +47,18 @@ IMAGES = {
     'dds',
     'dib',
     'djvu',
-    'egt',
     'exif',
     'gif',
     'gpl',
     'grf',
     'icns',
     'ico',
-    'iff',
     'jng',
     'jpeg',
     'jpg',
     'jfif',
     'jp2',
     'jps',
-    'lbm',
     'max',
     'miff',
     'mng',
@@ -73,7 +70,6 @@ IMAGES = {
     'pc2',
     'pc3',
     'pcf',
-    'pcx',
     'pdn',
     'pgm',
     'PI1',
@@ -95,11 +91,6 @@ IMAGES = {
     'raw',
     'rle',
     'sct',
-    'sgi',
-    'rgb',
-    'int',
-    'bw',
-    'tga',
     'tiff',
     'tif',
     'vtf',
@@ -154,5 +145,5 @@ IMAGES = {
     'sid',
     'ras',
     'sun',
-    'tga'
+    'tga',
 }

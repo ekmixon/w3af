@@ -286,10 +286,4 @@ def listdir_remove_fs(query_dir):
     :return: A list without 'failing_spider'
     """
     original = orig_listdir(query_dir)
-    result = []
-
-    for fname in original:
-        if TEST_PLUGIN_NAME not in fname:
-            result.append(fname)
-
-    return result
+    return [fname for fname in original if TEST_PLUGIN_NAME not in fname]

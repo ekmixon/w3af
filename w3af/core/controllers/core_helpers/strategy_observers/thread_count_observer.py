@@ -49,6 +49,6 @@ class ThreadCountObserver(StrategyObserver):
         self.last_call = current_time
 
         active_threads = threading.active_count()
-        om.out.debug('The framework has %s active threads.' % active_threads)
+        om.out.debug(f'The framework has {active_threads} active threads.')
 
     crawl = audit = bruteforce = grep = log_thread_count

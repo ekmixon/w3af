@@ -62,7 +62,7 @@ def get_css_context(data, payload):
     """
     :return: A list which contains lists of all contexts where the payload lives
     """
-    return [c for c in get_css_context_iter(data, payload)]
+    return list(get_css_context_iter(data, payload))
 
 
 def get_css_context_iter(data, payload):

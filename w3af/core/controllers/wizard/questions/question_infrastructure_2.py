@@ -36,8 +36,11 @@ class question_infrastructure_2(question):
 
         self._question_title = 'Plugin selection'
 
-        self._question_str = 'This step allows you to select from a group of plugins that'
-        self._question_str += ' identify network and HTTP appliances that may be between'
+        self._question_str = (
+            'This step allows you to select from a group of plugins that'
+            + ' identify network and HTTP appliances that may be between'
+        )
+
         self._question_str += ' w3af and the target Web Application.'
 
     def _get_option_objects(self):
@@ -71,9 +74,7 @@ class question_infrastructure_2(question):
             plugin_list.append('afd')
 
         if options_list[self._d2].get_value():
-            plugin_list.append('detect_reverse_proxy')
-            plugin_list.append('detect_transparent_proxy')
-
+            plugin_list.extend(('detect_reverse_proxy', 'detect_transparent_proxy'))
         if options_list[self._d3].get_value():
             plugin_list.append('fingerprint_WAF')
 

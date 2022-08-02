@@ -51,7 +51,7 @@ class TestInterceptProxy(unittest.TestCase):
         port = self._proxy.get_port()
 
         # Build the proxy opener
-        proxy_url = 'http://%s:%s' % (self.IP, port)
+        proxy_url = f'http://{self.IP}:{port}'
         proxy_handler = urllib2.ProxyHandler({'http': proxy_url,
                                               'https': proxy_url})
         self.proxy_opener = urllib2.build_opener(proxy_handler,

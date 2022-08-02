@@ -83,11 +83,10 @@ class FourOhFourResponse(object):
         return self._clean_body
 
     def __eq__(self, other):
-        for attr in self.__slots__:
-            if self.__getattribute__(attr) != other.__getattribute__(attr):
-                return False
-
-        return True
+        return all(
+            self.__getattribute__(attr) == other.__getattribute__(attr)
+            for attr in self.__slots__
+        )
 
     def dumps(self):
         return msgpack.dumps(self.to_dict(),
@@ -150,9 +149,8 @@ class FourOhFourResponse(object):
             url = url.url_join(relative_url)
             return url.url_string
 
-        extension = url.get_extension()
-        if extension:
-            filename = 'filename.%s' % extension
+        if extension := url.get_extension():
+            filename = f'filename.{extension}'
         else:
             filename = 'filename'
 
@@ -160,4 +158,4 @@ class FourOhFourResponse(object):
         return url.url_string
 
     def __repr__(self):
-        return '<FourOhFourResponse (url:%s, code:%s)>' % (self.url, self.code)
+        return f'<FourOhFourResponse (url:{self.url}, code:{self.code})>'

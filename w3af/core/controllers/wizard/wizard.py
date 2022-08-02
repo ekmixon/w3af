@@ -83,10 +83,9 @@ class wizard:
         if len(possibleQuestions) != 1:
             raise BaseFrameworkException('We have more than one next question. Please verify your wizard definition.\
                           Possible questions are: ' + str(possibleQuestions))
-        else:
-            # return the next question
-            self._currentQuestion = possibleQuestions[0]
-            return possibleQuestions[0]
+        # return the next question
+        self._currentQuestion = possibleQuestions[0]
+        return possibleQuestions[0]
 
     def previous(self):
         """

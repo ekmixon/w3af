@@ -72,7 +72,7 @@ def diff_dmp(a, b):
         if op == -1:
             a_changes.append(change)
 
-        if op == 1:
+        elif op == 1:
             b_changes.append(change)
 
     a_changes = '\n'.join(a_changes)

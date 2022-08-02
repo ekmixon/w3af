@@ -144,14 +144,14 @@ def epoch_to_string(spent_time):
         msg += '0 seconds'
     else:
         if weeks:
-            msg += str(weeks) + ' week%s ' % ('s' if weeks > 1 else '')
+            msg += str(weeks) + f" week{'s' if weeks > 1 else ''} "
         if days:
-            msg += str(days) + ' day%s ' % ('s' if days > 1 else '')
+            msg += str(days) + f" day{'s' if days > 1 else ''} "
         if hours:
-            msg += str(hours) + ' hour%s ' % ('s' if hours > 1 else '')
+            msg += str(hours) + f" hour{'s' if hours > 1 else ''} "
         if minutes:
-            msg += str(minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
+            msg += str(minutes) + f" minute{'s' if minutes > 1 else ''} "
         if seconds:
-            msg += str(seconds) + ' second%s' % ('s' if seconds > 1 else '')
+            msg += str(seconds) + f" second{'s' if seconds > 1 else ''}"
 
     return msg

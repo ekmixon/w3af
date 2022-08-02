@@ -297,10 +297,7 @@ class OutputManager(Process):
             return True
 
         time_diff = time.time() - self._last_output_flush
-        if time_diff >= self.FLUSH_TIMEOUT:
-            return True
-
-        return False
+        return time_diff >= self.FLUSH_TIMEOUT
 
     def update_last_output_flush(self):
         self._last_output_flush = time.time()
@@ -501,7 +498,7 @@ class OutputManager(Process):
             self._output_plugin_instances.append(plugin)
 
     def _get_plugin_instance(self, plugin_name):
-        plugin = factory('w3af.plugins.output.%s' % plugin_name)
+        plugin = factory(f'w3af.plugins.output.{plugin_name}')
         plugin.set_w3af_core(self._w3af_core)
 
         if plugin_name in self._plugin_options.keys():

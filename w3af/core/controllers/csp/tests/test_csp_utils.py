@@ -64,16 +64,25 @@ class TestUtils(unittest.TestCase):
         Test case in which site do not provides "unsafe-inline" related CSP
         (no directive value "unsafe-inline").
         """
-        hrds = {}
-        hrds[CSP_HEADER_FIREFOX] = CSP_DIRECTIVE_SCRIPT + " 'self'"
-        hrds[CSP_HEADER_W3C_REPORT_ONLY] = CSP_DIRECTIVE_DEFAULT + \
-            " 'self';" + CSP_DIRECTIVE_REPORT_URI + " http://example.com"
-        hrds[CSP_HEADER_W3C] = CSP_DIRECTIVE_SCRIPT + " 'self';" + \
-            CSP_DIRECTIVE_REPORT_URI + " /myrelativeuri"
-        
+        hrds = {
+            CSP_HEADER_FIREFOX: CSP_DIRECTIVE_SCRIPT + " 'self'",
+            CSP_HEADER_W3C_REPORT_ONLY: (
+                CSP_DIRECTIVE_DEFAULT
+                + " 'self';"
+                + CSP_DIRECTIVE_REPORT_URI
+                + " http://example.com"
+            ),
+            CSP_HEADER_W3C: (
+                CSP_DIRECTIVE_SCRIPT
+                + " 'self';"
+                + CSP_DIRECTIVE_REPORT_URI
+                + " /myrelativeuri"
+            ),
+        }
+
         csp_headers = Headers(hrds.items())
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
-        
+
         self.assertFalse(unsafe_inline_enabled(http_response))
 
     def test_unsafe_inline_enabled_no_case02(self):
@@ -82,17 +91,30 @@ class TestUtils(unittest.TestCase):
         (directive value "unsafe-inline" for a directive other than Script or
         Style).
         """
-        hrds = {}
-        hrds[CSP_HEADER_FIREFOX] = CSP_DIRECTIVE_IMAGE + " '" + \
-            CSP_DIRECTIVE_VALUE_UNSAFE_INLINE + "'"
-        hrds[CSP_HEADER_W3C_REPORT_ONLY] = CSP_DIRECTIVE_DEFAULT + \
-            " 'self';" + CSP_DIRECTIVE_REPORT_URI + " http://example.com"
-        hrds[CSP_HEADER_W3C] = CSP_DIRECTIVE_SCRIPT + " 'self';" + \
-            CSP_DIRECTIVE_REPORT_URI + " /myrelativeuri"
-        
+        hrds = {
+            CSP_HEADER_FIREFOX: (
+                CSP_DIRECTIVE_IMAGE
+                + " '"
+                + CSP_DIRECTIVE_VALUE_UNSAFE_INLINE
+                + "'"
+            ),
+            CSP_HEADER_W3C_REPORT_ONLY: (
+                CSP_DIRECTIVE_DEFAULT
+                + " 'self';"
+                + CSP_DIRECTIVE_REPORT_URI
+                + " http://example.com"
+            ),
+            CSP_HEADER_W3C: (
+                CSP_DIRECTIVE_SCRIPT
+                + " 'self';"
+                + CSP_DIRECTIVE_REPORT_URI
+                + " /myrelativeuri"
+            ),
+        }
+
         csp_headers = Headers(hrds.items())
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
-        
+
         self.assertFalse(unsafe_inline_enabled(http_response))
 
     def test_unsafe_inline_enabled_yes_case01(self):
@@ -100,15 +122,24 @@ class TestUtils(unittest.TestCase):
         Test case in which site provides "unsafe-inline" related CSP for
         script.
         """
-        hrds = {}
-        hrds[CSP_HEADER_FIREFOX] = CSP_DIRECTIVE_SCRIPT + " '" + \
-            CSP_DIRECTIVE_VALUE_UNSAFE_INLINE + "'"
-        hrds[CSP_HEADER_W3C] = CSP_DIRECTIVE_SCRIPT + " 'self';" + \
-            CSP_DIRECTIVE_REPORT_URI + " /myrelativeuri"
-        
+        hrds = {
+            CSP_HEADER_FIREFOX: (
+                CSP_DIRECTIVE_SCRIPT
+                + " '"
+                + CSP_DIRECTIVE_VALUE_UNSAFE_INLINE
+                + "'"
+            ),
+            CSP_HEADER_W3C: (
+                CSP_DIRECTIVE_SCRIPT
+                + " 'self';"
+                + CSP_DIRECTIVE_REPORT_URI
+                + " /myrelativeuri"
+            ),
+        }
+
         csp_headers = Headers(hrds.items())
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
-        
+
         self.assertTrue(unsafe_inline_enabled(http_response))
 
     def test_unsafe_inline_enabled_yes_case02(self):
@@ -116,15 +147,24 @@ class TestUtils(unittest.TestCase):
         Test case in which site provides "unsafe-inline" related CSP for
         Style.
         """
-        hrds = {}
-        hrds[CSP_HEADER_FIREFOX] = CSP_DIRECTIVE_STYLE + " '" + \
-            CSP_DIRECTIVE_VALUE_UNSAFE_INLINE + "'"
-        hrds[CSP_HEADER_W3C] = CSP_DIRECTIVE_SCRIPT + " 'self';" + \
-            CSP_DIRECTIVE_REPORT_URI + " /myrelativeuri"
-        
+        hrds = {
+            CSP_HEADER_FIREFOX: (
+                CSP_DIRECTIVE_STYLE
+                + " '"
+                + CSP_DIRECTIVE_VALUE_UNSAFE_INLINE
+                + "'"
+            ),
+            CSP_HEADER_W3C: (
+                CSP_DIRECTIVE_SCRIPT
+                + " 'self';"
+                + CSP_DIRECTIVE_REPORT_URI
+                + " /myrelativeuri"
+            ),
+        }
+
         csp_headers = Headers(hrds.items())
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
-        
+
         self.assertTrue(unsafe_inline_enabled(http_response))
 
     def test_retrieve_csp_report_uri_no(self):
@@ -141,17 +181,26 @@ class TestUtils(unittest.TestCase):
         """
         Test case in which site provides CSP report uri.
         """
-        hrds = {}
-        hrds[CSP_HEADER_FIREFOX] = CSP_DIRECTIVE_OBJECT + " 'self'"
-        hrds[CSP_HEADER_W3C_REPORT_ONLY] = CSP_DIRECTIVE_DEFAULT + \
-            " 'self';" + CSP_DIRECTIVE_REPORT_URI + " http://example.com"
-        hrds[CSP_HEADER_W3C] = CSP_DIRECTIVE_SCRIPT + " 'self';" + \
-            CSP_DIRECTIVE_REPORT_URI + " /myrelativeuri"
-        
+        hrds = {
+            CSP_HEADER_FIREFOX: CSP_DIRECTIVE_OBJECT + " 'self'",
+            CSP_HEADER_W3C_REPORT_ONLY: (
+                CSP_DIRECTIVE_DEFAULT
+                + " 'self';"
+                + CSP_DIRECTIVE_REPORT_URI
+                + " http://example.com"
+            ),
+            CSP_HEADER_W3C: (
+                CSP_DIRECTIVE_SCRIPT
+                + " 'self';"
+                + CSP_DIRECTIVE_REPORT_URI
+                + " /myrelativeuri"
+            ),
+        }
+
         csp_headers = Headers(hrds.items())
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
         uri_set = retrieve_csp_report_uri(http_response)
-        
+
         self.assertEqual(len(uri_set), 2)
         self.assertTrue("http://example.com" in uri_set)
         self.assertTrue("/myrelativeuri" in uri_set)
@@ -175,9 +224,9 @@ class TestUtils(unittest.TestCase):
         header_value = "default-source 'self'; image-src *"
         hrds = {CSP_HEADER_W3C: header_value}.items()
         csp_headers = Headers(hrds)
-        
+
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
-        
+
         self.assertFalse(provides_csp_features(http_response))
 
     def test_provides_csp_features_no_case03(self):
@@ -190,9 +239,9 @@ class TestUtils(unittest.TestCase):
         header_value = "default-src ' '; img-src ' '"
         hrds = {CSP_HEADER_W3C: header_value}.items()
         csp_headers = Headers(hrds)
-        
+
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
-                
+
         self.assertFalse(provides_csp_features(http_response))
         
     def test_provides_csp_features_yes_case01(self):
@@ -232,13 +281,15 @@ class TestUtils(unittest.TestCase):
         Test case in which site provides CSP features using report-only +
         mandatory policies.
         """
-        hrds = {}
-        hrds[CSP_HEADER_W3C] = CSP_DIRECTIVE_OBJECT + " 'self'"
-        hrds[CSP_HEADER_W3C_REPORT_ONLY] = CSP_DIRECTIVE_CONNECTION + " *"
+        hrds = {
+            CSP_HEADER_W3C: CSP_DIRECTIVE_OBJECT + " 'self'",
+            CSP_HEADER_W3C_REPORT_ONLY: f"{CSP_DIRECTIVE_CONNECTION} *",
+        }
+
         csp_headers = Headers(hrds.items())
-        
+
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
-        
+
         self.assertTrue(provides_csp_features(http_response))
 
     def test_retrieve_csp_policies_without_policies(self):
@@ -256,16 +307,18 @@ class TestUtils(unittest.TestCase):
         Test case in which 1 same policy is specified using 3 differents CSP
         headers.
         """
-        hrds = {}
-        hrds[CSP_HEADER_W3C] = CSP_DIRECTIVE_OBJECT + " 'self'"
-        hrds[CSP_HEADER_FIREFOX] = CSP_DIRECTIVE_OBJECT + " *"
-        hrds[CSP_HEADER_CHROME] = CSP_DIRECTIVE_OBJECT + " *.sample.com"
+        hrds = {
+            CSP_HEADER_W3C: CSP_DIRECTIVE_OBJECT + " 'self'",
+            CSP_HEADER_FIREFOX: f"{CSP_DIRECTIVE_OBJECT} *",
+            CSP_HEADER_CHROME: f"{CSP_DIRECTIVE_OBJECT} *.sample.com",
+        }
+
         csp_headers = Headers(hrds.items())
-        
+
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
-        
+
         policies = retrieve_csp_policies(http_response)
-        
+
         self.assertEqual(len(policies), 1)
         self.assertEqual(len(policies[CSP_DIRECTIVE_OBJECT]), 3)
         self.assertTrue("self" in policies[CSP_DIRECTIVE_OBJECT])
@@ -316,16 +369,17 @@ class TestUtils(unittest.TestCase):
         """
         Test case in which 3 policies are specified using 3 differents CSP headers.
         """
-        hrds = {}
-        hrds[CSP_HEADER_W3C] = CSP_DIRECTIVE_OBJECT + " 'none'"
-        hrds[CSP_HEADER_FIREFOX] = CSP_DIRECTIVE_IMAGE + " *"
-        hrds[CSP_HEADER_CHROME] = CSP_DIRECTIVE_CONNECTION + \
-            " trust.sample.com"
+        hrds = {
+            CSP_HEADER_W3C: CSP_DIRECTIVE_OBJECT + " 'none'",
+            CSP_HEADER_FIREFOX: f"{CSP_DIRECTIVE_IMAGE} *",
+            CSP_HEADER_CHROME: (CSP_DIRECTIVE_CONNECTION + " trust.sample.com"),
+        }
+
         csp_headers = Headers(hrds.items())
-        
+
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
         policies = retrieve_csp_policies(http_response)
-        
+
         self.assertEqual(len(policies), 3)
         self.assertEqual(len(policies[CSP_DIRECTIVE_OBJECT]), 1)
         self.assertEqual(policies[CSP_DIRECTIVE_OBJECT][0], "none")
@@ -341,18 +395,20 @@ class TestUtils(unittest.TestCase):
         headers and in which 1 is specified using report only CSP header.
         Test in which we want only mandatory policies.
         """
-        hrds = {}
-        hrds[CSP_HEADER_W3C] = CSP_DIRECTIVE_OBJECT + " 'none'"
-        hrds[CSP_HEADER_FIREFOX] = CSP_DIRECTIVE_IMAGE + " *"
-        hrds[CSP_HEADER_CHROME] = CSP_DIRECTIVE_CONNECTION + \
-            " trust.sample.com"
-        hrds[CSP_HEADER_W3C_REPORT_ONLY] = CSP_DIRECTIVE_SCRIPT + \
-            " report.sample.com"
+        hrds = {
+            CSP_HEADER_W3C: CSP_DIRECTIVE_OBJECT + " 'none'",
+            CSP_HEADER_FIREFOX: f"{CSP_DIRECTIVE_IMAGE} *",
+            CSP_HEADER_CHROME: (CSP_DIRECTIVE_CONNECTION + " trust.sample.com"),
+            CSP_HEADER_W3C_REPORT_ONLY: (
+                CSP_DIRECTIVE_SCRIPT + " report.sample.com"
+            ),
+        }
+
         csp_headers = Headers(hrds.items())
-        
+
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
         policies = retrieve_csp_policies(http_response)
-        
+
         self.assertEqual(len(policies), 3)
         self.assertEqual(len(policies[CSP_DIRECTIVE_OBJECT]), 1)
         self.assertEqual(policies[CSP_DIRECTIVE_OBJECT][0], "none")
@@ -368,18 +424,20 @@ class TestUtils(unittest.TestCase):
         headers and in which 1 is specified using report only CSP header.
         Test in which we want only report-only policies.
         """
-        hrds = {}
-        hrds[CSP_HEADER_W3C] = CSP_DIRECTIVE_OBJECT + " 'none'"
-        hrds[CSP_HEADER_FIREFOX] = CSP_DIRECTIVE_IMAGE + " *"
-        hrds[CSP_HEADER_CHROME] = CSP_DIRECTIVE_CONNECTION + \
-            " trust.sample.com"
-        hrds[CSP_HEADER_W3C_REPORT_ONLY] = CSP_DIRECTIVE_SCRIPT + \
-            " report.sample.com"
+        hrds = {
+            CSP_HEADER_W3C: CSP_DIRECTIVE_OBJECT + " 'none'",
+            CSP_HEADER_FIREFOX: f"{CSP_DIRECTIVE_IMAGE} *",
+            CSP_HEADER_CHROME: (CSP_DIRECTIVE_CONNECTION + " trust.sample.com"),
+            CSP_HEADER_W3C_REPORT_ONLY: (
+                CSP_DIRECTIVE_SCRIPT + " report.sample.com"
+            ),
+        }
+
         csp_headers = Headers(hrds.items())
-        
+
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
         policies = retrieve_csp_policies(http_response, True)
-        
+
         self.assertEqual(len(policies), 1)
         self.assertEqual(len(policies[CSP_DIRECTIVE_SCRIPT]), 1)
         self.assertEqual(
@@ -393,10 +451,10 @@ class TestUtils(unittest.TestCase):
         header_value = "sandbox ; script-nonce "
         hrds = {CSP_HEADER_W3C: header_value}.items()
         csp_headers = Headers(hrds)
-        
+
         http_response = HTTPResponse(200, '', csp_headers, self.url, self.url)
         policies = retrieve_csp_policies(http_response)
-        
+
         self.assertEqual(len(policies), 2)
         self.assertEqual(len(policies[CSP_DIRECTIVE_SANDBOX]), 1)
         self.assertEqual(policies[CSP_DIRECTIVE_SANDBOX][0], "")
@@ -672,9 +730,5 @@ class TestUtils(unittest.TestCase):
         :param vuln_desc: Vuln description.
         :param vulns_list: vulns list coming from method "find_vulns()".
         :return: True only if vuln is found. 
-        """        
-        for v in vulns_list:
-            if v.desc == vuln_desc:
-                return True
-        
-        return False
+        """    
+        return any(v.desc == vuln_desc for v in vulns_list)

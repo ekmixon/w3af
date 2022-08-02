@@ -40,17 +40,17 @@ class TestCommonAttackMethods(unittest.TestCase):
                   bin:x:2:2:bin:/bin:/bin/sh
                   FOOTER123"""
         self.cam._define_cut_from_etc_passwd(body, body)
-        
+
         header = 'HEADER\n                  '
         footer = '                  FOOTER123'
         self.assertEqual(self.cam._header_length, len(header))
         self.assertEqual(self.cam._footer_length, len(footer))
-        
+
         mtab_content = """/dev/sda1 / ext4 rw,errors=remount-ro 0 0
                           proc /proc proc rw,noexec,nosuid,nodev 0 0
                           sysfs /sys sysfs rw,noexec,nosuid,nodev 0 0
                           none /sys/fs/fuse/connections fusectl rw 0 0"""
-        mtab_body = '%s%s%s' % (header, mtab_content, footer)
+        mtab_body = f'{header}{mtab_content}{footer}'
         self.assertEqual(self.cam._cut(mtab_body), mtab_content)
         
     def test_etc_passwd_extract_div(self):
@@ -103,14 +103,14 @@ class TestCommonAttackMethods(unittest.TestCase):
         expected = 'w3af\n'
         header = 'HEADER'
         footer = 'FOOTER123'
-        body = '%s%s%s' % (header, expected, footer)
+        body = f'{header}{expected}{footer}'
         self.cam._define_exact_cut(body, expected)
-        
+
         self.assertEqual(self.cam._header_length, len(header))
         self.assertEqual(self.cam._footer_length, len(footer))
-        
+
         another_content = """hello world"""
-        another_body = '%s%s%s' % (header, another_content, footer)
+        another_body = f'{header}{another_content}{footer}'
         self.assertEqual(self.cam._cut(another_body), another_content)        
     
     def test_guess_cut_basic(self):
@@ -118,17 +118,17 @@ class TestCommonAttackMethods(unittest.TestCase):
         error = 'error found while trying to read not existing file'
         header = 'HEADER'
         footer = 'FOOTER123'
-        
-        body_a = '%s%s%s' % (header, expected, footer)
-        body_b = '%s%s%s' % (header, error, footer)
-        
+
+        body_a = f'{header}{expected}{footer}'
+        body_b = f'{header}{error}{footer}'
+
         self.cam._guess_cut(body_a, body_b, expected)
-        
+
         self.assertEqual(self.cam._header_length, len(header))
         self.assertEqual(self.cam._footer_length, len(footer))
-        
+
         another_content = """hello world"""
-        another_body = '%s%s%s' % (header, another_content, footer)
+        another_body = f'{header}{another_content}{footer}'
         self.assertEqual(self.cam._cut(another_body), another_content)
 
     @attr('ci_fails')
@@ -144,39 +144,22 @@ class TestCommonAttackMethods(unittest.TestCase):
         """
         raise SkipTest
     
-        expected = 'w3af\n'
-        error = 'error found while trying to read not existing file'
-        header = ''
-        footer = 'FOOTER123'
-        
-        body_a = '%s%s%s' % (header, expected, footer)
-        body_b = '%s%s%s' % (header, error, footer)
-        
-        self.cam._guess_cut(body_a, body_b, expected)
-        
-        self.assertEqual(self.cam._header_length, len(header))
-        self.assertEqual(self.cam._footer_length, len(footer))
-        
-        another_content = """hello world"""
-        another_body = '%s%s%s' % (header, another_content, footer)
-        self.assertEqual(self.cam._cut(another_body), another_content)
-    
     def test_guess_cut_no_footer(self):
         expected = 'w3af\n'
         error = 'error found while trying to read not existing file'
         header = 'HEADER'
         footer = ''
-        
-        body_a = '%s%s%s' % (header, expected, footer)
-        body_b = '%s%s%s' % (header, error, footer)
-        
+
+        body_a = f'{header}{expected}{footer}'
+        body_b = f'{header}{error}{footer}'
+
         self.cam._guess_cut(body_a, body_b, expected)
-        
+
         self.assertEqual(self.cam._header_length, len(header))
         self.assertEqual(self.cam._footer_length, len(footer))
-        
+
         another_content = """hello world"""
-        another_body = '%s%s%s' % (header, another_content, footer)
+        another_body = f'{header}{another_content}{footer}'
         self.assertEqual(self.cam._cut(another_body), another_content)
     
     def test_guess_cut_no_header_no_footer(self):
@@ -184,15 +167,15 @@ class TestCommonAttackMethods(unittest.TestCase):
         error = 'error found while trying to read not existing file'
         header = ''
         footer = ''
-        
-        body_a = '%s%s%s' % (header, expected, footer)
-        body_b = '%s%s%s' % (header, error, footer)
-        
+
+        body_a = f'{header}{expected}{footer}'
+        body_b = f'{header}{error}{footer}'
+
         self.cam._guess_cut(body_a, body_b, expected)
-        
+
         self.assertEqual(self.cam._header_length, len(header))
         self.assertEqual(self.cam._footer_length, len(footer))
-        
+
         another_content = """hello world"""
-        another_body = '%s%s%s' % (header, another_content, footer)
+        another_body = f'{header}{another_content}{footer}'
         self.assertEqual(self.cam._cut(another_body), another_content)        

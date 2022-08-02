@@ -123,21 +123,17 @@ class TestExactDelay(unittest.TestCase):
             urllib.send_mutant = MagicMock(side_effect=side_effect)
 
             delay_obj = ExactDelay('sleep(%s)')
-            
+
             url = URL('http://moth/?id=1')
             req = FuzzableRequest(url)
             mutant = QSMutant(req)
             mutant.set_dc(url.querystring)
             mutant.set_token(('id', 0))
-            
+
             ed = ExactDelayController(mutant, delay_obj, urllib)
             controlled, responses = ed.delay_is_controlled()
-            
+
             # This is where we change from test_delay_controlled, the basic
             # idea is that we'll allow false negatives but no false positives
-            if expected_result:
-                expected_result = [True, False]
-            else:
-                expected_result = [False]
-                
+            expected_result = [True, False] if expected_result else [False]
             self.assertIn(controlled, expected_result, delays)

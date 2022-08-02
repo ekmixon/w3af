@@ -44,7 +44,7 @@ class CachedDiskDict(object):
 
         self._max_in_memory = max_in_memory
         self._disk_dict = DiskDict(table_prefix=table_prefix)
-        self._in_memory = dict()
+        self._in_memory = {}
         self._access_count = Counter()
 
     def cleanup(self):
@@ -52,7 +52,7 @@ class CachedDiskDict(object):
 
     def _get_table_prefix(self, table_prefix):
         if table_prefix is None:
-            table_prefix = 'cached_disk_dict_%s' % rand_alpha(16)
+            table_prefix = f'cached_disk_dict_{rand_alpha(16)}'
         else:
             args = (table_prefix, rand_alpha(16))
             table_prefix = 'cached_disk_dict_%s_%s' % args
@@ -194,15 +194,9 @@ class CachedDiskDict(object):
         thus increasing the access count +1 for each, which will leave all
         access counts +1, forcing no movements between memory and disk.
         """
-        for key in self._in_memory:
-            yield key
-
-        for key in self._disk_dict:
-            yield key
+        yield from self._in_memory
+        yield from self._disk_dict
 
     def iteritems(self):
-        for key, value in self._in_memory.iteritems():
-            yield key, value
-
-        for key, value in self._disk_dict.iteritems():
-            yield key, value
+        yield from self._in_memory.iteritems()
+        yield from self._disk_dict.iteritems()

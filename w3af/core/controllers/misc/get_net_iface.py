@@ -39,12 +39,7 @@ def get_net_iface():
     #
     ifname = 'eth0'
 
-    if os.name == "nt":
-        #
-        #   TODO: Find out how to do this in Windows!
-        #
-        pass
-    else:
+    if os.name != "nt":
         #
         #   Linux
         #

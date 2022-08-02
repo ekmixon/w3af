@@ -31,7 +31,7 @@ class PIPDependency(object):
         self.is_git = False
         self.git_src = None
         self.tgz_src = None
-                    
+
         if git_src is not None:
             self.is_git = True
             self.git_src = git_src
@@ -46,5 +46,4 @@ class PIPDependency(object):
                 self.tgz_src == other.tgz_src)
 
     def __repr__(self):
-        return '<PIPDependency (%s|%s)>' % (self.package_name,
-                                            self.package_version)
+        return f'<PIPDependency ({self.package_name}|{self.package_version})>'

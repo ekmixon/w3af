@@ -37,11 +37,7 @@ def summarize_exit_codes(exit_codes):
     Take a list of exit codes, if at least one of them is not 0, then return
     that number.
     """
-    for ec in exit_codes:
-        if ec != 0:
-            return ec
-    
-    return 0
+    return next((ec for ec in exit_codes if ec != 0), 0)
 
 
 def nose_strategy():
@@ -50,15 +46,15 @@ def nose_strategy():
     """
     test_ids = get_test_ids(NOSE_RUN_SELECTOR)
     save_noseids_as_json()
-    
+
     for tests_to_run in zip(*[iter(test_ids)]*CHUNK_SIZE):
-        
+
         first = tests_to_run[0]
         last = tests_to_run[-1]
-        
+
         tests_str = ' '.join([str(i) for i in tests_to_run])
-        cmd = '%s %s %s' % (NOSETESTS, NOSE_PARAMS, tests_str)
-        
+        cmd = f'{NOSETESTS} {NOSE_PARAMS} {tests_str}'
+
         yield cmd, first, last
 
 
@@ -81,11 +77,11 @@ if __name__ == '__main__':
             future = executor.submit(*args)
             future.run_id = run_id
             future_list.append(future)
-        
+
         total_tests = len(future_list)
         print_status(start_time, done_list, total_tests, queued_run_ids,
                      executor, exit_codes)
-        
+
         while future_list:
             try:
                 for future in futures.as_completed(future_list, timeout=120):
@@ -108,13 +104,13 @@ if __name__ == '__main__':
                             print_info_console(cmd, stdout, stderr,
                                                exit_code, output_fname)
                             print_will_fail(exit_code)
-                    
+
             except futures.TimeoutError:
                 logging.debug('Hit futures.as_completed timeout.')
                 logging.warning('Waiting...')
                 print_status(start_time, done_list, total_tests, queued_run_ids,
                              executor, exit_codes)
-            
+
             # Filter future_list to avoid issues with tasks which are already
             # finished/done
             future_list = [f for f in future_list if f not in done_list]
@@ -123,6 +119,6 @@ if __name__ == '__main__':
     run_tests = get_run_tests()
     ignored_tests = get_ignored_tests()
     print_summary(all_tests, run_tests, ignored_tests) 
-        
+
     # We need to set the exit code.
     sys.exit(summarize_exit_codes(exit_codes))

@@ -28,10 +28,7 @@ import cPickle
 def user_wants_pytracemalloc():
     _should_profile = os.environ.get('W3AF_PYTRACEMALLOC', '0')
 
-    if _should_profile.isdigit() and int(_should_profile) == 1:
-        return True
-
-    return False
+    return bool(_should_profile.isdigit() and int(_should_profile) == 1)
 
 
 if user_wants_pytracemalloc():

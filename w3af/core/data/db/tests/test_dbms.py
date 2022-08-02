@@ -37,8 +37,7 @@ from w3af.core.controllers.misc.temp_dir import (get_temp_dir,
 def get_temp_filename():
     temp_dir = get_temp_dir()
     fname = ''.join(starmap(choice, repeat((string.letters,), 18)))
-    filename = os.path.join(temp_dir, fname + '.w3af.temp_db')
-    return filename
+    return os.path.join(temp_dir, f'{fname}.w3af.temp_db')
 
 
 class TestDBMS(unittest.TestCase):
@@ -93,26 +92,6 @@ class TestDBMS(unittest.TestCase):
                        ' by making the dbms._query_handler implementation look like:'
                        ''
                        'return self.cursor.execute(query, parameters)')
-
-        # I measured the performance of doing 10000 UPDATE calls with the same
-        # cursor in dbms._query_handler(). It took:
-        ONE_CURSOR_TIME = 0.710026979446
-
-        # Now I'm testing the same thing with multiple cursors (which is the way
-        # it should always have been).
-        db = SQLiteDBMS(get_temp_filename())
-        db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')]).result()
-
-        db.execute('INSERT INTO TEST VALUES (1, "a")').result()
-
-        start_time = time.time()
-
-        for i in xrange(10000):
-            result = db.execute('UPDATE TEST SET data = ? WHERE id = ?', ('%s' % i, 1)).result()
-            self.assertEqual(result.rowcount, 1)
-
-        spent_time = time.time() - start_time
-        self.assertLessEqual(spent_time, ONE_CURSOR_TIME * 1.1)
 
     def test_select_non_exist_table(self):
         db = SQLiteDBMS(get_temp_filename())

@@ -46,12 +46,11 @@ class EchoLinux(BasePayloadTransfer):
         """
         # Check if echo exists and works as expected
         res = self._exec_method("/bin/echo -n 'w3af'")
-        if 'w3af' != res:
-            om.out.debug('Remote server returned: "' + res +
-                         '" when expecting "w3af".')
-            return False
-        else:
+        if res == 'w3af':
             return True
+        om.out.debug('Remote server returned: "' + res +
+                     '" when expecting "w3af".')
+        return False
 
     def estimate_transfer_time(self, size):
         """
@@ -77,7 +76,7 @@ class EchoLinux(BasePayloadTransfer):
         self._filename = destination
 
         # Zeroing destination file
-        self._exec_method('> ' + self._filename)
+        self._exec_method(f'> {self._filename}')
 
         i = 0
         while i < len(data_str):
@@ -86,7 +85,7 @@ class EchoLinux(BasePayloadTransfer):
             for c in data_str[i:i + self._step]:
                 cmd += '\\\\' + oct(ord(c)).zfill(4)
 
-            cmd += " >> " + self._filename
+            cmd += f" >> {self._filename}"
             i += self._step
 
             # Send the command to the remote server

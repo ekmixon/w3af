@@ -91,69 +91,58 @@ class CommonAttackMethods(object):
         #
 
         if float(longest_match_size) == body_b_len == 0 or \
-          (float(longest_match_size) / body_b_len) < 0.01:
+              (float(longest_match_size) / body_b_len) < 0.01:
             self._footer_length = 0
             self._header_length = 0
 
-        else:
-            #
-            # The match object has the following interesting attributes:
-            #     a: The index where the longest match starts at body_a
-            #     b: The index where the longest match starts at body_b
-            #     size: Size of the longest match
-            #
-            # Now that I have that info, I want to know if this represents the
-            # header or the footer of the response.
-            #
-            # We're in the case where at least we have a header, a footer or
-            # both.
-            #
+        elif longest_match_a + longest_match_size == body_a_len:
+            #    The longest match is in the footer
+            self._footer_length = longest_match_size
 
-            if longest_match_a + longest_match_size == body_a_len:
-                #    The longest match is in the footer
-                self._footer_length = longest_match_size
-
-                #    Now I need to calculate the header
-                longest_match_header = sequence_matcher.find_longest_match(
-                                                                0, longest_match_a,
-                                                                0, longest_match_b)
-                longest_match_header_size = longest_match_header[2]
+            #    Now I need to calculate the header
+            longest_match_header = sequence_matcher.find_longest_match(
+                                                            0, longest_match_a,
+                                                            0, longest_match_b)
+            longest_match_header_size = longest_match_header[2]
 
                 #    Do we really have a header?
-                if (float(longest_match_header_size) / (body_b_len - longest_match_a)) < 0.1:
-                    #    No we don't
-                    self._header_length = 0
-                else:
-                    # We have a header!
-                    self._header_length = longest_match_header_size
+            self._header_length = (
+                0
+                if (
+                    float(longest_match_header_size)
+                    / (body_b_len - longest_match_a)
+                )
+                < 0.1
+                else longest_match_header_size
+            )
 
+        else:
+
+            #    The longest match is in the header
+            self._header_length = longest_match_size
+
+            #    Now I need to calculate the footer
+            #
+            #    It seems that with a reverse it works better!
+            #
+            body_a_reverse = body_a[::-1]
+            body_b_reverse = body_b[::-1]
+            sequence_matcher = difflib.SequenceMatcher(lambda x: len(x) < 3,
+                                                       body_a_reverse,
+                                                       body_b_reverse)
+
+            longest_match_footer = sequence_matcher.find_longest_match(
+                0, body_a_len - self._header_length,
+                0, body_b_len - self._header_length)
+            longest_match_footer_size = longest_match_footer[2]
+
+            #    Do we really have a footer?
+            if (float(longest_match_footer_size) / (body_b_len - longest_match_a)) < 0.01:
+                #    No we don't
+                self._footer_length = 0
             else:
-
-                #    The longest match is in the header
-                self._header_length = longest_match_size
-
-                #    Now I need to calculate the footer
-                #
-                #    It seems that with a reverse it works better!
-                #
-                body_a_reverse = body_a[::-1]
-                body_b_reverse = body_b[::-1]
-                sequence_matcher = difflib.SequenceMatcher(lambda x: len(x) < 3,
-                                                           body_a_reverse,
-                                                           body_b_reverse)
-
-                longest_match_footer = sequence_matcher.find_longest_match(
-                    0, body_a_len - self._header_length,
-                    0, body_b_len - self._header_length)
-                longest_match_footer_size = longest_match_footer[2]
-
-                #    Do we really have a footer?
-                if (float(longest_match_footer_size) / (body_b_len - longest_match_a)) < 0.01:
-                    #    No we don't
-                    self._footer_length = 0
-                else:
-                    # We have a header!
-                    self._footer_length = longest_match_footer_size
+                # We have a header!
+                self._footer_length = longest_match_footer_size
 
         return True
 
@@ -172,37 +161,37 @@ class CommonAttackMethods(object):
         """
         if body_a != body_b:
             msg = '_define_cut_from_etc_passwd can only work with static'\
-                  ' responses and in this case the bodies seem to be different.'
+                      ' responses and in this case the bodies seem to be different.'
             raise ValueError(msg)
-        
+
         etc_passwd_re = re.compile('[\w_-]*:x:\d*?:\d*?:[\w_, -]*:[/\w_-]*:[/\w_-]*')
         mo = etc_passwd_re.search(body_a)
-        
+
         if not mo:
             msg = '_define_cut_from_etc_passwd did not find any /etc/passwd'\
-                  ' contents in the HTTP response body.'
+                      ' contents in the HTTP response body.'
             raise ValueError(msg)
-        
-        match_string = mo.group(0)
+
+        match_string = mo[0]
         if 'root:' not in match_string:
             msg = '_define_cut_from_etc_passwd did not find "root:" in the'\
-                  ' first line of /etc/passwd. The algorithm is very strict'\
-                  ' and does NOT support this case.'
+                      ' first line of /etc/passwd. The algorithm is very strict'\
+                      ' and does NOT support this case.'
             raise ValueError(msg)
-            
+
         start = mo.start()
         self._header_length = start + match_string.index('root:')
-        
+
         all_match_lines = etc_passwd_re.findall(body_a)
         last_line = all_match_lines[-1]
         # The -1 is for the \n at the end of the last /etc/passwd line
         self._footer_length = len(body_a) - body_a.index(last_line) - len(last_line) - 1
-        
+
         if self._footer_length == -1:
             msg = '_define_cut_from_etc_passwd detected an /etc/passwd that it'\
-                  ' can NOT handle because it does NOT end in a new line.'
+                      ' can NOT handle because it does NOT end in a new line.'
             raise ValueError(msg)
-        
+
         return True
 
     def _define_exact_cut(self, body, expected_result):
@@ -216,23 +205,21 @@ class CommonAttackMethods(object):
 
         :return: True if the cut could be defined
         """
-        if not expected_result in body:
+        if expected_result not in body:
             # I won't be able to define the cut
             return False
 
-        else:
+        # Define the header
+        self._header_length = body.find(expected_result)
 
-            # Define the header
-            self._header_length = body.find(expected_result)
+        # Define the footer
+        self._footer_length = len(body) - self._header_length - len(expected_result)
 
-            # Define the footer
-            self._footer_length = len(body) - self._header_length - len(expected_result)
+        om.out.debug('Defined cut header and footer using exact match')
+        om.out.debug('Defined header length to %i' % self._header_length)
+        om.out.debug('Defined footer length to %i' % self._footer_length)
 
-            om.out.debug('Defined cut header and footer using exact match')
-            om.out.debug('Defined header length to %i' % self._header_length)
-            om.out.debug('Defined footer length to %i' % self._footer_length)
-
-            return True
+        return True
 
     def _cut(self, body):
         """

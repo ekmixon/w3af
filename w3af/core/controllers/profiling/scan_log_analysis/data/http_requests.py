@@ -11,9 +11,9 @@ FROM_CACHE = 'from_cache=1'
 def get_total_http_requests(scan_log_filename, scan):
     scan.seek(0)
 
-    count = dict()
-    methods = dict()
-    urls = dict()
+    count = {}
+    methods = {}
+    urls = {}
     cached_responses = 0.0
 
     for line in scan:

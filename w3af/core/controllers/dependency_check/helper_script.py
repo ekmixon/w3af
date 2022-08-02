@@ -82,18 +82,12 @@ def generate_helper_script(pkg_manager_cmd, os_packages, pip_cmd, failed_deps,
 
 
 def generate_pip_install_non_git(pip_cmd, not_git_pkgs):
-    if running_in_virtualenv():
-        cmd_fmt = '%s install %s'
-    else:
-        cmd_fmt = 'sudo %s install %s'
+    cmd_fmt = '%s install %s' if running_in_virtualenv() else 'sudo %s install %s'
+    install_specs = [
+        f'{fdep.package_name}=={fdep.package_version}' for fdep in not_git_pkgs
+    ]
 
-    install_specs = []
-    for fdep in not_git_pkgs:
-        install_specs.append('%s==%s' % (fdep.package_name,
-                                         fdep.package_version))
-        
-    cmd = cmd_fmt % (pip_cmd, ' '.join(install_specs))
-    return cmd
+    return cmd_fmt % (pip_cmd, ' '.join(install_specs))
 
 
 def generate_pip_install_git(pip_cmd, git_pkg):

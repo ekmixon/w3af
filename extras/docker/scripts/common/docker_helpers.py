@@ -66,10 +66,12 @@ def connect_to_container(container_id, cmd, extra_ssh_flags=()):
     Connect to a running container, start one if not running.
     """
     try:
-        cont_data = subprocess.check_output('docker inspect %s' % container_id,
-                                            shell=True)
+        cont_data = subprocess.check_output(
+            f'docker inspect {container_id}', shell=True
+        )
+
     except subprocess.CalledProcessError:
-        print('Failed to inspect container with id %s' % container_id)
+        print(f'Failed to inspect container with id {container_id}')
         sys.exit(1)
 
     try:
@@ -90,10 +92,8 @@ def connect_to_container(container_id, cmd, extra_ssh_flags=()):
                '-o LogLevel=quiet']
 
     # Add the extra ssh flags
-    for extra_ssh_flag in extra_ssh_flags:
-        ssh_cmd.append(extra_ssh_flag)
-
-    ssh_cmd.append('root@' + ip_address)
+    ssh_cmd.extend(iter(extra_ssh_flags))
+    ssh_cmd.append(f'root@{ip_address}')
     ssh_cmd.append(cmd)
 
     try:
@@ -105,7 +105,7 @@ def connect_to_container(container_id, cmd, extra_ssh_flags=()):
 
 def check_root():
     # if not root...kick out
-    if not os.geteuid() == 0:
+    if os.geteuid() != 0:
         sys.exit('Only root can run this script')
 
 

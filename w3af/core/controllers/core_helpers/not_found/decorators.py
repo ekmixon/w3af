@@ -241,27 +241,26 @@ class PreventMultipleThreads(Decorator):
                    ' and normalized path %s (did:%s)')
             om.out.debug(msg % msg_args)
 
-            if not wait_result:
-                # Something really bad happen. The is_404() function should
-                # never take more than TIMEOUT seconds to process one HTTP
-                # response.
-                #
-                # To prevent more issues during the scan we're going to return
-                # True here, meaning that the is_404() will return True without
-                # even being called.
-                #
-                # This will reduce the processing / HTTP requests, etc. for a
-                # scan that is most likely having really bad performance.
-                msg = ('is_404() took more than %s seconds to run on %s,'
-                       ' returning true to reduce CPU usage and HTTP requests.'
-                       ' This error is very rare and should be manually analyzed.')
-                args = (self.TIMEOUT, http_response.get_uri())
-                om.out.error(msg % args)
-                return True
-            else:
+            if wait_result:
                 # All right! is_404 function call is complete, now let's call
                 # it again to obtain the result from the cache
                 return self._function(*args, **kwargs)
+            # Something really bad happen. The is_404() function should
+            # never take more than TIMEOUT seconds to process one HTTP
+            # response.
+            #
+            # To prevent more issues during the scan we're going to return
+            # True here, meaning that the is_404() will return True without
+            # even being called.
+            #
+            # This will reduce the processing / HTTP requests, etc. for a
+            # scan that is most likely having really bad performance.
+            msg = ('is_404() took more than %s seconds to run on %s,'
+                   ' returning true to reduce CPU usage and HTTP requests.'
+                   ' This error is very rare and should be manually analyzed.')
+            args = (self.TIMEOUT, http_response.get_uri())
+            om.out.error(msg % args)
+            return True
 
     def get_call_key(self, http_response):
         return FourOhFourResponse.normalize_path(http_response.get_uri())

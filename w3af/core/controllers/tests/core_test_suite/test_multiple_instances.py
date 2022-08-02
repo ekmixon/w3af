@@ -49,9 +49,7 @@ class TestW3afCore(unittest.TestCase):
         Just making sure nothing crashes if I have more than 1 instance of
         w3afCore
         """
-        instances = []
-        for _ in xrange(5):
-            instances.append(w3afCore())
+        instances = [w3afCore() for _ in xrange(5)]
 
     def test_multiple_instances_in_different_dummy_processes(self):
         """

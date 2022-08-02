@@ -46,10 +46,7 @@ class HTTPRequestException(BaseFrameworkException):
         self.request = request
 
     def get_url(self):
-        if self.request is None:
-            return None
-
-        return self.request.get_full_url()
+        return None if self.request is None else self.request.get_full_url()
 
 
 class ConnectionPoolException(HTTPRequestException):
@@ -89,12 +86,12 @@ class ScanMustStopException(Exception):
 
     def __str__(self):
         msg = str(self.msg)
-        
+
         if self.errs:
             msg += ' The following errors were logged:\n'
             for err in self.errs:
-                msg += '  - %s' % err
-                
+                msg += f'  - {err}'
+
         return msg
 
     __repr__ = __str__
@@ -135,7 +132,7 @@ class ScanMustStopByKnownReasonExc(ScanMustStopException):
     def __str__(self):
         _str = ScanMustStopException.__str__(self)
         if self.reason:
-            _str += ' - Reason: %s' % self.reason
+            _str += f' - Reason: {self.reason}'
         return _str
 
 

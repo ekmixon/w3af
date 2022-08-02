@@ -141,10 +141,10 @@ class SQLiteDBMS(object):
         return a future.
         """
         fr = self.sql_executor.query(query, parameters)
-        
+
         if self.autocommit or commit:
             self.commit()
-            
+
         return fr
 
     @verify_started
@@ -192,14 +192,14 @@ class SQLiteDBMS(object):
         return self.filename
     
     def drop_table(self, name):
-        query = 'DROP TABLE %s' % name
+        query = f'DROP TABLE {name}'
         return self.execute(query, commit=True)
     
     def clear_table(self, name):
         """
         Remove all rows from a table.
         """
-        query = 'DELETE FROM %s WHERE 1=1' % name
+        query = f'DELETE FROM {name} WHERE 1=1'
         return self.execute(query, commit=True)
     
     def create_table(self, name, columns, pk_columns=(), constraints=()):
@@ -208,7 +208,7 @@ class SQLiteDBMS(object):
         """
         if not name:
             raise ValueError('create_table requires a table name')
-        
+
         if not columns:
             raise ValueError('create_table requires column names and types')
 
@@ -219,22 +219,22 @@ class SQLiteDBMS(object):
             raise ValueError('constraints requires constraints in a tuple')
 
         # Create the table
-        query = 'CREATE TABLE %s (' % name
-        
+        query = f'CREATE TABLE {name} ('
+
         all_columns = []
         for column_data in columns:
             column_name, column_type = column_data
-            all_columns.append('%s %s' % (column_name, column_type))
-            
+            all_columns.append(f'{column_name} {column_type}')
+
         query += ', '.join(all_columns)
-        
+
         # Finally the PK and constraints
         if pk_columns:
-            query += ', PRIMARY KEY (%s)' % ','.join(pk_columns)
+            query += f", PRIMARY KEY ({','.join(pk_columns)})"
 
         if constraints:
             for c in constraints:
-                query += ', CONSTRAINT %s' % c
+                query += f', CONSTRAINT {c}'
 
         query += ')'
 
@@ -253,8 +253,7 @@ class SQLiteDBMS(object):
         :param table: The table from which you want to create an index from
         :param columns: A list of column names.
         """
-        query = 'CREATE INDEX %s_index ON %s( %s )' % (table, table,
-                                                       ','.join(columns))
+        query = f"CREATE INDEX {table}_index ON {table}( {','.join(columns)} )"
 
         return self.execute(query, commit=True)
 
@@ -269,12 +268,12 @@ class SQLiteExecutor(Process):
     
     def __init__(self, in_queue):
         super(SQLiteExecutor, self).__init__(name='SQLiteExecutor')
-        
+
         # Setting the thread to daemon mode so it dies with the rest of the
         # process, and a name so we can identify it during debugging sessions
         self.daemon = True
         self.name = 'SQLiteExecutor'
-        
+
         self._in_queue = in_queue
         self._last_reported_qsize = None
         self._current_query_num = 0
@@ -337,10 +336,7 @@ class SQLiteExecutor(Process):
     
     def _select_handler(self, query, parameters):
         result = self.cursor.execute(query, parameters)
-        result_lst = []
-        for row in result:
-            result_lst.append(row)
-        return result_lst
+        return list(result)
     
     def commit(self):
         future = Future()
@@ -384,7 +380,7 @@ class SQLiteExecutor(Process):
         self.autocommit = autocommit
         self.journal_mode = journal_mode
         self.cache_size = cache_size
-        
+
         #
         #    Setup phase
         #
@@ -395,12 +391,12 @@ class SQLiteExecutor(Process):
         else:
             conn = sqlite3.connect(self.filename,
                                    check_same_thread=True)
-        
-        conn.execute('PRAGMA journal_mode = %s' % self.journal_mode)
-        conn.execute('PRAGMA cache_size = %s' % self.cache_size)
+
+        conn.execute(f'PRAGMA journal_mode = {self.journal_mode}')
+        conn.execute(f'PRAGMA cache_size = {self.cache_size}')
         conn.text_factory = str
         self.conn = conn
-        
+
         self.cursor = conn.cursor()
 
         # Commented line to be: Slower but (hopefully) without malformed
@@ -494,20 +490,20 @@ temp_default_db = None
 
 def clear_default_temp_db_instance():
     global temp_default_db
-    
+
     if temp_default_db is not None:
         temp_default_db.close()
         temp_default_db = None
-        os.unlink('%s/main.db' % get_temp_dir())
+        os.unlink(f'{get_temp_dir()}/main.db')
 
 
 def get_default_temp_db_instance():
     global temp_default_db
-    
+
     if temp_default_db is None:
         create_temp_dir()
-        temp_default_db = SQLiteDBMS('%s/main.db' % get_temp_dir())
-        
+        temp_default_db = SQLiteDBMS(f'{get_temp_dir()}/main.db')
+
     return temp_default_db
 
 

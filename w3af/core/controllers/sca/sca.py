@@ -47,8 +47,7 @@ Node = phpast.Node
 
 
 def accept(nodeinst, visitor):
-    skip = visitor(nodeinst)
-    if skip:
+    if skip := visitor(nodeinst):
         return
 
     for field in nodeinst.fields:
@@ -152,10 +151,8 @@ class PhpSCA(object):
     def get_vars(self, usr_controlled=False):
         self._start()
         filter_tainted = (lambda v: v.controlled_by_user) if usr_controlled \
-            else (lambda v: 1)
-        all_vars = filter(filter_tainted, self._scopes[0].get_all_vars())
-
-        return all_vars
+                else (lambda v: 1)
+        return filter(filter_tainted, self._scopes[0].get_all_vars())
 
     def get_func_calls(self, vuln=False):
         self._start()
@@ -255,8 +252,7 @@ class NodeRep(object):
                 if type(val) is list:
                     for el in val:
                         el._parent_node = node
-                        for ele in NodeRep.parse(el, currlevel + 1, maxlevel):
-                            yield ele
+                        yield from NodeRep.parse(el, currlevel + 1, maxlevel)
 
     @property
     def lineno(self):
@@ -304,10 +300,7 @@ class VariableDef(NodeRep):
         its ancestor's name is in USER_VARS
         """
         if self._is_root is None:
-            if self.parent:
-                self._is_root = False
-            else:
-                self._is_root = True
+            self._is_root = not self.parent
         return self._is_root
 
     def set_is_root(self, is_root):
@@ -342,10 +335,7 @@ class VariableDef(NodeRep):
 
         if cbusr is None:
             if self.is_root:
-                if self._name in VariableDef.USER_VARS:
-                    cbusr = True
-                else:
-                    cbusr = False
+                cbusr = self._name in VariableDef.USER_VARS
             else:
                 cbusr = self.parent.controlled_by_user
 
@@ -359,15 +349,13 @@ class VariableDef(NodeRep):
         Return the taint source for this Variable Definition if any; otherwise
         return None.
         """
-        taintsrc = self._taint_source
-        if taintsrc:
+        if taintsrc := self._taint_source:
             return taintsrc
-        else:
-            deps = list(itertools.chain((self,), self.deps()))
-            v = deps[-2].var_node if len(deps) > 1 else None
-            if v and type(v._parent_node) is phpast.ArrayOffset:
-                return v._parent_node.expr
-            return None
+        deps = list(itertools.chain((self,), self.deps()))
+        v = deps[-2].var_node if len(deps) > 1 else None
+        if v and type(v._parent_node) is phpast.ArrayOffset:
+            return v._parent_node.expr
+        return None
 
     def __eq__(self, ovar):
         return self._scope == ovar._scope and \
@@ -384,7 +372,7 @@ class VariableDef(NodeRep):
         return hash(self._name)
 
     def __repr__(self):
-        return "<Var definition at line %s>" % self.lineno
+        return f"<Var definition at line {self.lineno}>"
 
     def __str__(self):
         return ("Line  %(lineno)s. Declaration of variable '%(name)s'."
@@ -422,8 +410,7 @@ class VariableDef(NodeRep):
             if type(n) is phpast.Variable:
                 nodetys = [phpast.FunctionCall]
                 for fc in self._get_parent_nodes(n, nodetys=nodetys):
-                    vulnty = FuncCall.get_vulnty_for_sec(fc.name)
-                    if vulnty:
+                    if vulnty := FuncCall.get_vulnty_for_sec(fc.name):
                         self._safe_for.append(vulnty)
                 return n
         return None
@@ -469,15 +456,13 @@ class FuncCall(NodeRep):
 
         if type(vulntys) is list:
             return vulntys
-        else:
-            # Defaults to no vulns.
-            self._vulntypes = vulntys = []
+        # Defaults to no vulns.
+        self._vulntypes = vulntys = []
 
-            possvulnty = FuncCall.get_vulnty_for(self._name)
-            if possvulnty:
-                for v in (p.var for p in self._params if p.var):
-                    if v.controlled_by_user and v.is_tainted_for(possvulnty):
-                        vulntys.append(possvulnty)
+        if possvulnty := FuncCall.get_vulnty_for(self._name):
+            for v in (p.var for p in self._params if p.var):
+                if v.controlled_by_user and v.is_tainted_for(possvulnty):
+                    vulntys.append(possvulnty)
         return vulntys
 
     @property
@@ -485,12 +470,11 @@ class FuncCall(NodeRep):
         vulnsrcs = self._vulnsources
         if type(vulnsrcs) is list:
             return vulnsrcs
-        else:
-            vulnsrcs = self._vulnsources = []
-            # It has to be vulnerable; otherwise we got nothing to do.
-            if self.vulntypes:
-                map(vulnsrcs.append, (p.var.taint_source for p in self._params
-                                      if p.var and p.var.taint_source))
+        vulnsrcs = self._vulnsources = []
+        # It has to be vulnerable; otherwise we got nothing to do.
+        if self.vulntypes:
+            map(vulnsrcs.append, (p.var.taint_source for p in self._params
+                                  if p.var and p.var.taint_source))
         return vulnsrcs
 
     @property
@@ -505,10 +489,14 @@ class FuncCall(NodeRep):
 
         :param fname: Function name
         """
-        for vulnty, pvfnames in FuncCall.PVFDB.iteritems():
-            if any(fname == pvfn for pvfn in pvfnames):
-                return vulnty
-        return None
+        return next(
+            (
+                vulnty
+                for vulnty, pvfnames in FuncCall.PVFDB.iteritems()
+                if any(fname == pvfn for pvfn in pvfnames)
+            ),
+            None,
+        )
 
     @staticmethod
     def get_vulnty_for_sec(sfname):
@@ -517,18 +505,24 @@ class FuncCall(NodeRep):
 
         :param sfname: Securing function name
         """
-        for vulnty, sfnames in FuncCall.SFDB.iteritems():
-            if any(sfname == sfn for sfn in sfnames):
-                return vulnty
-        return None
+        return next(
+            (
+                vulnty
+                for vulnty, sfnames in FuncCall.SFDB.iteritems()
+                if any(sfname == sfn for sfn in sfnames)
+            ),
+            None,
+        )
 
     def __repr__(self):
         return "<'%s' call at line %s>" % (self._name, self._lineno)
 
     def __str__(self):
-        return "Line %s. '%s' function call. Vulnerable%s" % \
-            (self.lineno, self.name, self.vulntypes and
-             ' for %s.' % ','.join(self.vulntypes) or ': No.')
+        return "Line %s. '%s' function call. Vulnerable%s" % (
+            self.lineno,
+            self.name,
+            self.vulntypes and f" for {','.join(self.vulntypes)}." or ': No.',
+        )
 
     def _parse_params(self):
         def attrname(node):
@@ -594,7 +588,7 @@ class Scope(object):
         return self._vars.values()
 
     def __repr__(self):
-        return "<Scope [%s]>" % ', '.join(v.name for v in self.get_all_vars())
+        return f"<Scope [{', '.join((v.name for v in self.get_all_vars()))}]>"
 
 
 class Param(object):
@@ -614,22 +608,20 @@ class Param(object):
             if type(node) is phpast.Variable:
                 varname = node.name
                 scopevar = scope.get_var(varname)
-                vardef = VariableDef(varname + '__$temp_anon_var$_',
-                                     node.lineno, scope)
+                vardef = VariableDef(f'{varname}__$temp_anon_var$_', node.lineno, scope)
                 vardef.var_node = node
                 vardef.parent = scopevar
                 break
 
             elif type(node) is phpast.FunctionCall:
-                vardef = VariableDef(node.name + '_funvar', node.lineno, scope)
+                vardef = VariableDef(f'{node.name}_funvar', node.lineno, scope)
                 fc = FuncCall(node.name, node.lineno, node, scope)
 
                 # TODO: So far we only work with the first parameter.
                 # IMPROVE THIS!!!
                 vardef.parent = fc.params and fc.params[0].var or None
 
-                vulnty = FuncCall.get_vulnty_for_sec(fc.name)
-                if vulnty:
+                if vulnty := FuncCall.get_vulnty_for_sec(fc.name):
                     vardef._safe_for.append(vulnty)
                 break
 

@@ -63,7 +63,7 @@ class CoreStrategy(object):
     """
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
-        
+
         # Consumer threads
         self._grep_consumer = None
         self._audit_consumer = None
@@ -349,10 +349,7 @@ class CoreStrategy(object):
 
         # Get the scan time and compare with the max
         scan_time = self._w3af_core.status.get_run_time()
-        if scan_time > max_scan_time:
-            return True
-
-        return False
+        return scan_time > max_scan_time
 
     def _route_one_fuzzable_request_batch(self, _input, output, finished,
                                           consumer_forced_end):
@@ -383,7 +380,7 @@ class CoreStrategy(object):
                     # This consumer is saying that it doesn't have any
                     # pending or in progress work
                     finished.add(url_producer)
-                    om.out.debug('Producer %s has finished (empty queue)' % url_producer.get_name())
+                    om.out.debug(f'Producer {url_producer.get_name()} has finished (empty queue)')
             else:
                 if result_item == POISON_PILL:
                     # This consumer is saying that it has finished, so we
@@ -682,9 +679,7 @@ class CoreStrategy(object):
             * Set the Queue in xurllib
             * Start the consumer
         """
-        grep_plugins = self._w3af_core.plugins.plugins['grep']
-
-        if grep_plugins:
+        if grep_plugins := self._w3af_core.plugins.plugins['grep']:
             self._grep_consumer = grep(grep_plugins, self._w3af_core)
             self._w3af_core.uri_opener.set_grep_queue_put(self._grep_consumer.grep)
             self._grep_consumer.start()
@@ -754,9 +749,7 @@ class CoreStrategy(object):
         The input queue for this consumer is populated by the fuzzable request
         router.
         """
-        bruteforce_plugins = self._w3af_core.plugins.plugins['bruteforce']
-
-        if bruteforce_plugins:
+        if bruteforce_plugins := self._w3af_core.plugins.plugins['bruteforce']:
             self._bruteforce_consumer = bruteforce(bruteforce_plugins,
                                                    self._w3af_core)
             self._bruteforce_consumer.start()
@@ -778,9 +771,7 @@ class CoreStrategy(object):
         performing any step, the developer needs to run the force_auth_login()
         method.
         """
-        auth_plugins = self._w3af_core.plugins.plugins['auth']
-
-        if auth_plugins:
+        if auth_plugins := self._w3af_core.plugins.plugins['auth']:
             self._auth_consumer = auth(auth_plugins, self._w3af_core, timeout)
             self._auth_consumer.start()
             self._auth_consumer.force_login()
@@ -791,8 +782,6 @@ class CoreStrategy(object):
         """
         om.out.debug('Called _setup_audit()')
 
-        audit_plugins = self._w3af_core.plugins.plugins['audit']
-
-        if audit_plugins:
+        if audit_plugins := self._w3af_core.plugins.plugins['audit']:
             self._audit_consumer = audit(audit_plugins, self._w3af_core)
             self._audit_consumer.start()

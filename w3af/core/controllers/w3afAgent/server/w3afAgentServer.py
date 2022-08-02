@@ -133,12 +133,13 @@ class PipeThread(Process):
         self.source = source
         self.sink = sink
 
-        om.out.debug('[PipeThread] Starting data forwarding: %s ( %s -> %s )' %
-                     (self, source.getpeername(), sink.getpeername()))
+        om.out.debug(
+            f'[PipeThread] Starting data forwarding: {self} ( {source.getpeername()} -> {sink.getpeername()} )'
+        )
+
 
         PipeThread.pipes.append(self)
-        om.out.debug(
-            '[PipeThread] Active forwardings: %s' % len(PipeThread.pipes))
+        om.out.debug(f'[PipeThread] Active forwardings: {len(PipeThread.pipes)}')
 
         self._keep_running = True
 
@@ -153,15 +154,17 @@ class PipeThread(Process):
     def run(self):
         while self._keep_running:
             try:
-                data = self.source.recv(1024)
-                if not data:
+                if data := self.source.recv(1024):
+                    self.sink.send(data)
+                else:
                     break
-                self.sink.send(data)
             except:
                 break
 
         PipeThread.pipes.remove(self)
-        om.out.debug('[PipeThread] Terminated one connection, active forwardings: %s' % len(PipeThread.pipes))
+        om.out.debug(
+            f'[PipeThread] Terminated one connection, active forwardings: {len(PipeThread.pipes)}'
+        )
 
 
 class TCPRelay(Process):
@@ -181,8 +184,14 @@ class TCPRelay(Process):
         try:
             self.sock.bind((self._ip_address, self._port))
         except:
-            raise BaseFrameworkException('Port (' + self._ip_address +
-                                ':' + str(self._port) + ') already in use.')
+            raise BaseFrameworkException(
+                (
+                    (f'Port ({self._ip_address}' + ':')
+                    + str(self._port)
+                    + ') already in use.'
+                )
+            )
+
         else:
             om.out.debug('[TCPRelay] Bound to ' +
                          self._ip_address + ':' + str(self._port))

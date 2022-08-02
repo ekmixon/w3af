@@ -29,9 +29,7 @@ class OrderedIterDefaultDict(defaultdict):
             yield k, self[k]
 
     def __repr__(self):
-        _repr = dict()
-        for k, v in self.iteritems():
-            _repr[k] = v
+        _repr = dict(self.iteritems())
         return repr(_repr)
 
 
@@ -101,8 +99,7 @@ class URLTree(object):
                 n.set_is_leaf(True)
 
     def iteritems(self):
-        for k, v in self.tree.iteritems():
-            yield k, v
+        yield from self.tree.iteritems()
 
     def _url_to_tree_nodes(self, url):
         """
@@ -114,11 +111,8 @@ class URLTree(object):
         :param url: A URL instance
         :return: The split URL
         """
-        tree_path = []
-
-        protocol_domain = u'%s://%s' % (url.get_protocol(), url.get_net_location())
-        tree_path.append(protocol_domain)
-
+        protocol_domain = f'{url.get_protocol()}://{url.get_net_location()}'
+        tree_path = [protocol_domain]
         path = url.get_path()
         split_path = path.split(u'/')
 

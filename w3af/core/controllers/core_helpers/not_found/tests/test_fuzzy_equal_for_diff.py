@@ -35,7 +35,7 @@ class Test404FuzzyEqualForDiff(unittest.TestCase):
         # Do not increase this 50 too much, it will exceed the xurllib max
         # HTTP response body length
         parts = [re.__doc__]
-        parts = parts * 50
+        parts *= 50
 
         parts.extend(unique_parts)
 
@@ -43,9 +43,7 @@ class Test404FuzzyEqualForDiff(unittest.TestCase):
         rnd.seed(1)
         rnd.shuffle(parts)
 
-        body = '\n'.join(parts)
-
-        return body
+        return '\n'.join(parts)
 
     def test_empty(self):
         diff_x = ''
@@ -93,9 +91,11 @@ class Test404FuzzyEqualForDiff(unittest.TestCase):
 
             args = (diff_x, diff_y, self.IS_EQUAL_RATIO)
 
-            self.assertEqual(fuzzy_equal_for_diff(*args),
-                             expected_result,
-                             'Failed at test %s' % num_lines)
+            self.assertEqual(
+                fuzzy_equal_for_diff(*args),
+                expected_result,
+                f'Failed at test {num_lines}',
+            )
 
     def test_empty_add_text_lines(self):
         tests = [
@@ -106,15 +106,17 @@ class Test404FuzzyEqualForDiff(unittest.TestCase):
             (5, False),
         ]
 
+        diff_x = ''
         for num_lines, expected_result in tests:
-            diff_x = ''
             diff_y = '\n'.join(['hello world'] * num_lines)
 
             args = (diff_x, diff_y, self.IS_EQUAL_RATIO)
 
-            self.assertEqual(fuzzy_equal_for_diff(*args),
-                             expected_result,
-                             'Failed at test %s' % num_lines)
+            self.assertEqual(
+                fuzzy_equal_for_diff(*args),
+                expected_result,
+                f'Failed at test {num_lines}',
+            )
 
     def test_empty_add_hash_lines(self):
         tests = [
@@ -125,12 +127,14 @@ class Test404FuzzyEqualForDiff(unittest.TestCase):
             (100, True),
         ]
 
+        diff_x = ''
         for num_lines, expected_result in tests:
-            diff_x = ''
             diff_y = '\n'.join(['0e7b2e00d5ee46718258ae6ed5e2b315'] * num_lines)
 
             args = (diff_x, diff_y, self.IS_EQUAL_RATIO)
 
-            self.assertEqual(fuzzy_equal_for_diff(*args),
-                             expected_result,
-                             'Failed at test %s' % num_lines)
+            self.assertEqual(
+                fuzzy_equal_for_diff(*args),
+                expected_result,
+                f'Failed at test {num_lines}',
+            )

@@ -61,7 +61,7 @@ def get_clean_body_from_parts(body, uri, doc_type):
     :return: A string that represents the "cleaned" response body of the
              response.
     """
-    if not doc_type == HTTPResponse.DOC_TYPE_TEXT_OR_HTML:
+    if doc_type != HTTPResponse.DOC_TYPE_TEXT_OR_HTML:
         return body
 
     url = uri.uri2url()

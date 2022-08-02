@@ -139,10 +139,11 @@ class VariantDB(object):
                 self._log_return_false(fuzzable_request, 'seen_exactly_the_same')
                 return False
 
-            if self._has_form(fuzzable_request):
-                if not self._need_more_variants_for_form(fuzzable_request):
-                    self._log_return_false(fuzzable_request, 'need_more_variants_for_form')
-                    return False
+            if self._has_form(
+                fuzzable_request
+            ) and not self._need_more_variants_for_form(fuzzable_request):
+                self._log_return_false(fuzzable_request, 'need_more_variants_for_form')
+                return False
 
             if not self._need_more_variants_for_uri(fuzzable_request):
                 self._log_return_false(fuzzable_request, 'need_more_variants_for_uri')
@@ -170,10 +171,7 @@ class VariantDB(object):
 
         # We've seen at least one fuzzable request with this pattern...
         url = fuzzable_request.get_uri()
-        has_params = url.has_query_string() or fuzzable_request.get_raw_data()
-
-        # Choose which max_variants to use
-        if has_params:
+        if has_params := url.has_query_string() or fuzzable_request.get_raw_data():
             max_variants = self.params_max_variants
             max_variants_type = 'params'
         else:
@@ -181,7 +179,7 @@ class VariantDB(object):
             max_variants_type = 'path'
 
         if count >= max_variants:
-            _type = 'need_more_variants_for_uri(%s)' % max_variants_type
+            _type = f'need_more_variants_for_uri({max_variants_type})'
             self._log_return_false(fuzzable_request, _type)
             return False
 
@@ -203,10 +201,7 @@ class VariantDB(object):
 
     def _has_form(self, fuzzable_request):
         raw_data = fuzzable_request.get_raw_data()
-        if raw_data and len(raw_data.get_param_names()) >= 2:
-            return True
-
-        return False
+        return bool(raw_data and len(raw_data.get_param_names()) >= 2)
 
     def _need_more_variants_for_form(self, fuzzable_request):
         #

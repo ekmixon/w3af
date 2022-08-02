@@ -211,11 +211,10 @@ class OutputPlugin(Plugin):
                     res = item[1].replace('plugins/', '')
                     res = res.replace('/', '.')
                     return res.replace('.py', '')
-            else:
-                # From the unknown caller, I just need the name of the function
-                item = the_stack[which_stack_item]
-                res = item[1].split('/')[-1:][0]
-                return res.replace('.py', '')
+            # From the unknown caller, I just need the name of the function
+            item = the_stack[which_stack_item]
+            res = item[1].split('/')[-1:][0]
+            return res.replace('.py', '')
 
         except Exception:
             return 'unknown-caller'
@@ -235,16 +234,16 @@ class OutputPlugin(Plugin):
         # Only work if something is enabled
         if plugins_list:
             response = 'plugins\n'
-            response += '    ' + plugin_type + ' ' + ', '.join(plugins_list) + '\n'
+            response += f'    {plugin_type} ' + ', '.join(plugins_list) + '\n'
 
             for plugin_name in plugins_list:
                 if plugin_name in plugins_options:
-                    response += '    ' + plugin_type + ' config ' + plugin_name + '\n'
+                    response += f'    {plugin_type} config {plugin_name}' + '\n'
 
                     for plugin_option in plugins_options[plugin_name]:
                         name = str(plugin_option.get_name())
                         value = str(plugin_option.get_value())
-                        response += '        set ' + name + ' ' + value + '\n'
+                        response += f'        set {name} {value}' + '\n'
 
                     response += '        back\n'
 

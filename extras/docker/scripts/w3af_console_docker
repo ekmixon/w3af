@@ -15,8 +15,7 @@ def parse_args():
                                             ' is latest, try develop to get'
                                             ' the latest w3af features.',
                         required=False)
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
@@ -27,11 +26,7 @@ if __name__ == '__main__':
 
     container_id = start_container(args.tag)
 
-    if args.debug:
-        cmd = '/bin/bash'
-    else:
-        cmd = '/home/w3af/w3af/w3af_console --no-update'
-
+    cmd = '/bin/bash' if args.debug else '/home/w3af/w3af/w3af_console --no-update'
     try:
         connect_to_container(container_id, cmd)
     finally:

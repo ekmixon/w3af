@@ -33,8 +33,7 @@ def get_crawling_stats(scan_log_filename, scan):
             ignored_forms += 1
             continue
 
-        match = NEW_URL_FOUND.search(line)
-        if match:
+        if match := NEW_URL_FOUND.search(line):
             plugin_name = match.group(1)
             if plugin_name in new_url_found_by_plugin:
                 new_url_found_by_plugin[plugin_name] += 1

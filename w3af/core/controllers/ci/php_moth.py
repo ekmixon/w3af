@@ -30,6 +30,6 @@ def get_php_moth_http(path='/'):
     except IOError:
         php_moth_netloc = DEFAULT_PHP_MOTH
 
-    return 'http://%s%s' % (php_moth_netloc, path)
+    return f'http://{php_moth_netloc}{path}'
 
 

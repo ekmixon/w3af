@@ -114,8 +114,7 @@ class CoreStatus(object):
                 if status_str:
                     status_str += '\n'
 
-                status_str += 'Auditing %s using %s.%s' % (audit_fr, 'audit',
-                                                           audit_plugin)
+                status_str += f'Auditing {audit_fr} using audit.{audit_plugin}'
 
             status_str = status_str.replace('\x00', '')
             return status_str
@@ -242,10 +241,7 @@ class CoreStatus(object):
 
         # The user never enabled crawl plugins or the scan has already finished
         # and no crawl plugins will be run
-        if dc is None:
-            return True
-
-        return dc.has_finished()
+        return True if dc is None else dc.has_finished()
 
     def get_crawl_current_fr(self):
         return self.get_current_fuzzable_request('crawl')
@@ -277,10 +273,7 @@ class CoreStatus(object):
 
         # The user never enabled grep plugins or the scan has already finished
         # and no grep plugins will be run
-        if gc is None:
-            return True
-
-        return gc.has_finished()
+        return True if gc is None else gc.has_finished()
 
     def get_grep_input_speed(self):
         gc = self._w3af_core.strategy.get_grep_consumer()
@@ -328,10 +321,7 @@ class CoreStatus(object):
 
         # The user never enabled audit plugins or the scan has already finished
         # and no audit plugins will be run
-        if ac is None:
-            return True
-
-        return ac.has_finished()
+        return True if ac is None else ac.has_finished()
 
     def get_audit_eta(self):
         adjustment = self.get_audit_adjustment_ratio()
@@ -398,7 +388,7 @@ class CoreStatus(object):
 
             return eta
 
-        if output_speed == 0 and input_speed != 0:
+        if output_speed == 0:
             # The output speed is zero, this is a very strange case... it will
             # be impossible to calculate the ETA, just remove "I'll be there
             # in 5 minutes" (just like the pizza delivery when you call them
@@ -484,10 +474,7 @@ class CoreStatus(object):
         return RUNNING
 
     def epoch_eta_to_string(self, eta):
-        if eta is None:
-            return None
-
-        return epoch_to_string(time.time() - eta)
+        return None if eta is None else epoch_to_string(time.time() - eta)
 
     def get_status_as_dict(self):
         """
@@ -498,8 +485,7 @@ class CoreStatus(object):
             if fuzzable_request is None:
                 return fuzzable_request
 
-            return '%s %s' % (fuzzable_request.get_method(),
-                              fuzzable_request.get_uri())
+            return f'{fuzzable_request.get_method()} {fuzzable_request.get_uri()}'
 
         crawl_fuzzable_request = self.get_current_fuzzable_request('crawl')
         crawl_fuzzable_request = serialize_fuzzable_request(crawl_fuzzable_request)
@@ -591,13 +577,7 @@ class CoreStatus(object):
         if not self.has_finished_crawl():
             return True
 
-        if not self.has_finished_audit():
-            return True
-
-        if not self.has_finished_grep():
-            return True
-
-        return False
+        return not self.has_finished_grep() if self.has_finished_audit() else True
 
     def get_crawl_adjustment_ratio(self):
         """
@@ -715,7 +695,7 @@ class CoreStatus(object):
         return Adjustment(known=1.0, unknown=0.75)
 
     def log_eta(self, msg):
-        om.out.debug('[get_eta] %s' % msg)
+        om.out.debug(f'[get_eta] {msg}')
 
     def get_eta(self):
         """
@@ -747,7 +727,7 @@ class CoreStatus(object):
             after_audit = 0.0
             if grep_eta >= audit_eta:
                 after_audit = grep_eta - audit_eta
-                after_audit = after_audit * 0.1
+                after_audit *= 0.1
 
             self.log_eta('Crawl has finished. Using audit and grep ETAs'
                          ' to calculate overall ETA.')
@@ -773,7 +753,7 @@ class CoreStatus(object):
             grep_after_crawl_audit += grep_eta - crawl_eta
 
         audit_after_crawl = audit_after_crawl * 0.75
-        grep_after_crawl_audit = grep_after_crawl_audit * 0.05
+        grep_after_crawl_audit *= 0.05
         return crawl_eta + audit_after_crawl + grep_after_crawl_audit
 
     def get_sent_request_count(self):
@@ -812,11 +792,11 @@ class CoreStatus(object):
             'rpm': self.get_rpm()
         }
 
-        status_str = '%(status)s\n'
-
-        status_str += ('Crawl phase: In (%(cin).2f URLs/min)'
-                       ' Out (%(cout).2f URLs/min) Pending (%(clen)i URLs)'
-                       ' ETA (%(ceta)s)\n')
+        status_str = (
+            '%(status)s\n' + 'Crawl phase: In (%(cin).2f URLs/min)'
+            ' Out (%(cout).2f URLs/min) Pending (%(clen)i URLs)'
+            ' ETA (%(ceta)s)\n'
+        )
 
         status_str += ('Audit phase: In (%(ain).2f URLs/min)'
                        ' Out (%(aout).2f URLs/min) Pending (%(alen)i URLs)'

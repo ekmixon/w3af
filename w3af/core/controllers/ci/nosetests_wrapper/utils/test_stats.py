@@ -55,16 +55,16 @@ def _get_tests(fname, selector=None, nose_params=NOSE_COLLECT_PARAMS):
     """
     output_file = os.path.join(ARTIFACT_DIR, fname)
     collect_with_output = nose_params % output_file
-    
+
     if selector is not None:
         cmd = '%s %s -A "%s" w3af/' % (NOSETESTS,
                                        collect_with_output,
                                        selector)
     else:
-        cmd = '%s %s w3af/' % (NOSETESTS, collect_with_output)
-    
+        cmd = f'{NOSETESTS} {collect_with_output} w3af/'
+
     cmd_args = shlex.split(cmd)
-    
+
     logging.debug('Collecting tests: "%s"' % cmd)
     p = subprocess.Popen(
         cmd_args,
@@ -74,7 +74,7 @@ def _get_tests(fname, selector=None, nose_params=NOSE_COLLECT_PARAMS):
         shell=False,
         universal_newlines=True
     )
-    
+
     # Wait for it to finish
     stdout, stderr = p.communicate()
 
@@ -85,11 +85,11 @@ def _get_tests(fname, selector=None, nose_params=NOSE_COLLECT_PARAMS):
         sys.exit(1)
 
     test_suite, test_result = parse_xunit(output_file)
-    
+
     normalize_test_names(test_suite)
-    
-    logging.debug('Collected %s tests.' % test_result.testsRun)
-    
+
+    logging.debug(f'Collected {test_result.testsRun} tests.')
+
     return test_suite
 
 @nottest
@@ -156,32 +156,32 @@ def get_run_tests():
     """
     test_suite = None
     msg_fmt = 'Reading %s run tests from: "%s"'
-    
+
     for fname in os.listdir(ARTIFACT_DIR):
         if fname.startswith(NOSE_OUTPUT_PREFIX) and \
         fname.endswith(NOSE_XUNIT_EXT):
-            
+
             path_fname = os.path.join(ARTIFACT_DIR, fname)
             try:
                 curr_test_suite, test_result = parse_xunit(path_fname)
             except ElementTree.ParseError:
                 logging.warning('"%s" is an invalid XML file.' % fname)
                 continue
-            
+
             logging.debug(msg_fmt % (test_result.testsRun, fname))
-            
+
             # Merge all the tests.
             if test_suite is None:
                 test_suite = curr_test_suite
             else:
                 for test in curr_test_suite:
                     test_suite.addTest(test)
-    
+
     normalize_test_names(test_suite)
-    
+
     run_str = '\n'.join(sorted([t.id() for t in test_suite._tests]))
-    
-    logging.debug('Run %s tests.' % len(test_suite._tests))
+
+    logging.debug(f'Run {len(test_suite._tests)} tests.')
     logging.debug('The following tests were run:\n%s' % run_str)
 
     return test_suite

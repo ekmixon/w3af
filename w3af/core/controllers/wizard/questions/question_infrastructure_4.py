@@ -37,8 +37,11 @@ class question_infrastructure_4(question):
 
         self._question_title = 'Plugin selection'
 
-        self._question_str = 'w3af has a group of plugins that fetch information about the target'
-        self._question_str += ' application using Internet search engines. In order to enable or'
+        self._question_str = (
+            'w3af has a group of plugins that fetch information about the target'
+            + ' application using Internet search engines. In order to enable or'
+        )
+
         self._question_str += ' disable those plugins, we need to know the following:'
 
     def _get_option_objects(self):

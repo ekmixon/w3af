@@ -35,8 +35,11 @@ class question_target_2(question):
 
         self._question_title = 'Target Location'
 
-        self._question_str = 'w3af has a group of plugins that fetch information about your target application'
-        self._question_str += ' using Internet search engines. In order to enable or disable those plugins, we need'
+        self._question_str = (
+            'w3af has a group of plugins that fetch information about your target application'
+            + ' using Internet search engines. In order to enable or disable those plugins, we need'
+        )
+
         self._question_str += ' to know the following:'
 
     def _get_option_objects(self):

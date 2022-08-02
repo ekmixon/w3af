@@ -21,11 +21,7 @@ POOL_INTERNAL = 'pool internal thread state'
 
 
 def matches_ignore(line):
-    for ignore in IGNORES:
-        if ignore in line:
-            return True
-
-    return False
+    return any(ignore in line for ignore in IGNORES)
 
 
 def get_errors(scan_log_filename, scan):
@@ -52,7 +48,8 @@ def get_errors(scan_log_filename, scan):
         line = line.strip()
         errors.append(line)
 
-    output = KeyValueOutput('errors', 'errors and exceptions', {'count': len(errors),
-                                                                'errors': errors})
-
-    return output
+    return KeyValueOutput(
+        'errors',
+        'errors and exceptions',
+        {'count': len(errors), 'errors': errors},
+    )

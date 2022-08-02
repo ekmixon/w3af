@@ -102,14 +102,14 @@ def contains_source_code(http_response):
     """
     body = http_response.get_body()
 
-    for match, _, _, lang in _multi_re.query(body):
-
-        if is_false_positive(http_response, match, lang):
-            continue
-
-        return match, lang
-
-    return None, None
+    return next(
+        (
+            (match, lang)
+            for match, _, _, lang in _multi_re.query(body)
+            if not is_false_positive(http_response, match, lang)
+        ),
+        (None, None),
+    )
 
 
 def is_false_positive(http_response, match, detected_langs):
@@ -132,9 +132,11 @@ def is_false_positive(http_response, match, detected_langs):
     # The detection for some languages is weaker, thus we don't fully trust
     # them:
     for lang in detected_langs:
-        if lang in {PHP, ASP, JSP, ASPX}:
-            if 'javascript' in http_response.content_type:
-                return True
+        if (
+            lang in {PHP, ASP, JSP, ASPX}
+            and 'javascript' in http_response.content_type
+        ):
+            return True
 
     # Avoid some false positives in large binary files where we might
     # have <% , then 182837 binary chars, and finally %>.
@@ -145,7 +147,4 @@ def is_false_positive(http_response, match, detected_langs):
         if char in string.printable:
             printable += 1
 
-    if (printable / len(match_str)) < ratio:
-        return True
-
-    return False
+    return printable / len(match_str) < ratio

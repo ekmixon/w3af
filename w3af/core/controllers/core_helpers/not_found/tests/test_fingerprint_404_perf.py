@@ -83,13 +83,17 @@ class TestFingerprint404Perf(unittest.TestCase):
 
         for count, (request, response) in enumerate(iter_http_request_responses(self.HTTP_FILE)):
 
-            if response.get_code() == 404:
-                if len(recorded_404s) <= self.MAX_RECORDED_404:
-                    recorded_404s.append(response)
+            if (
+                response.get_code() == 404
+                and len(recorded_404s) <= self.MAX_RECORDED_404
+            ):
+                recorded_404s.append(response)
 
-            if response.get_code() != 404:
-                if len(recorded_200s) <= self.MAX_RECORDED_200:
-                    recorded_200s.append(response)
+            if (
+                response.get_code() != 404
+                and len(recorded_200s) <= self.MAX_RECORDED_200
+            ):
+                recorded_200s.append(response)
 
             if len(recorded_404s):
                 if count % self.RECORDED_404_EVERY == 0:

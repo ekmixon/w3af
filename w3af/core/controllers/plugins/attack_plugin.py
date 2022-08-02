@@ -85,17 +85,14 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             error_msg = 'can_exploit requires an integer list got %s instead.'
             if not isinstance(vuln_to_exploit, list):
                 raise TypeError(error_msg % type(vuln_to_exploit))
-            
-            if not all([isinstance(_id, int) for _id in vuln_to_exploit]):
+
+            if not all(isinstance(_id, int) for _id in vuln_to_exploit):
                 raise TypeError(error_msg % type(vuln_to_exploit))
-        
+
         vulns = self.get_exploitable_vulns()
         if vuln_to_exploit is not None:
             vulns = [v for v in vulns if v.get_id() == vuln_to_exploit]
-            return bool(vulns)
-        else:
-            # The user didn't specified what vuln to exploit... so...
-            return bool(vulns)
+        return bool(vulns)
 
     def get_attack_type(self):
         """
@@ -117,11 +114,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         if mutant is None:
             return vuln_copy
 
-        if mutant.get_method() == 'POST':
-            # No need to work !
-            return vuln_copy
-
-        else:
+        if mutant.get_method() != 'POST':
             # Need to create a new PostDataMutant, to be able to easily change
             # the values which we want to send in the HTTP post-data
             fre = FuzzableRequest(mutant.get_url(),
@@ -132,7 +125,8 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             pdm = PostDataMutant(fre)
             vuln_copy.set_mutant(pdm)
 
-            return vuln_copy
+        # No need to work !
+        return vuln_copy
 
     def get_root_probability(self):
         """
@@ -178,14 +172,13 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             msg = fmt % ' or '.join(self.get_kb_location())
             raise NoVulnerabilityFoundException(msg)
 
-        om.out.information(self.get_name() + ' exploit plugin is starting.')
+        om.out.information(f'{self.get_name()} exploit plugin is starting.')
         generated_shells = []
 
         for vuln in self.get_exploitable_vulns():
 
-            if vuln_to_exploit is not None:
-                if vuln_to_exploit != vuln.get_id():
-                    continue
+            if vuln_to_exploit is not None and vuln_to_exploit != vuln.get_id():
+                continue
 
             #
             #   A couple of minor verifications before continuing to exploit a
@@ -193,13 +186,13 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             #
             if not isinstance(vuln.get_url(), URL):
                 msg = '%s plugin can NOT exploit vulnerability with id "%s" as'\
-                      ' it doesn\'t have an URL.'
+                          ' it doesn\'t have an URL.'
                 om.out.debug(msg % (self.get_name(), vuln.get_id()))
                 continue
 
             if not isinstance(vuln.get_method(), basestring):
                 msg = '%s plugin can NOT exploit vulnerability with id "%s" as'\
-                      ' it doesn\'t have an HTTP method.'
+                          ' it doesn\'t have an HTTP method.'
                 om.out.debug(msg % (self.get_name(), vuln.get_id()))
                 continue
 
@@ -223,11 +216,6 @@ class AttackPlugin(Plugin, CommonAttackMethods):
                 if self._generate_only_one:
                     # A shell was generated, I only need one point of exec.
                     return [s, ]
-                else:
-                    # Keep adding all shells to the kb
-                    # this is done 5 lines before this comment
-                    pass
-
         return generated_shells
 
     def get_plugin_deps(self):

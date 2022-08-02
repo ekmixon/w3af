@@ -44,16 +44,16 @@ def generate_404_without_filename():
 
 
 def generate_404_without_name(extension):
-    return u'%s.%s' % (rand_alnum(5), extension)
+    return f'{rand_alnum(5)}.{extension}'
 
 
 def generate_404_for_short_filename(filename, extension):
-    mod_filename = u'%s%s' % (rand_alnum(4), filename)
+    mod_filename = f'{rand_alnum(4)}{filename}'
     return append_extension_if_exists(mod_filename, extension)
 
 
 def generate_404_by_rot3(filename, extension, seed=1):
-    plus_three_filename = [c for c in filename]
+    plus_three_filename = list(filename)
     mod_filename = ''.join(plus_three_filename)
 
     letters = string.letters
@@ -129,7 +129,7 @@ def generate_404_by_flipping_bytes(filename, extension, seed=1):
 def generate_404_by_shuffle(filename, extension, seed):
     random.seed(seed)
 
-    filename = [c for c in filename]
+    filename = list(filename)
 
     random.shuffle(filename)
     mod_filename = ''.join(filename)
@@ -141,7 +141,7 @@ def append_extension_if_exists(filename, extension):
     final_result = filename
 
     if extension is not None:
-        final_result += u'.%s' % extension
+        final_result += f'.{extension}'
 
     return final_result
 
@@ -205,7 +205,7 @@ def generate_404_filename(filename, seed=1):
     # names it is likely that we'll end up with either the same one
     # or another one that also exists in the path
     #
-    if len(orig_filename) in (1, 2):
+    if len(orig_filename) in {1, 2}:
         return generate_404_for_short_filename(orig_filename, extension)
 
     #

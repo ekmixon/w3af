@@ -66,7 +66,7 @@ class crontabHandler(delayedExecution):
         newCronLine, wait_time = self._createCronLine(
             remoteDate, command_to_exec)
 
-        if 'no crontab for ' + user == actualCron:
+        if f'no crontab for {user}' == actualCron:
             newCron = newCronLine
         else:
             newCron = actualCron + '\n' + newCronLine
@@ -74,12 +74,12 @@ class crontabHandler(delayedExecution):
         # This is done this way so I don't need to use one echo that prints new lines
         # new lines are \n and with gpc magic quotes that fails
         for line in newCron.split('\n'):
-            self._exec('/bin/echo ' + line + ' >> ' + self._cronFile)
-        self._exec('crontab ' + self._cronFile)
-        self._exec('/bin/rm ' + self._cronFile)
+            self._exec(f'/bin/echo {line} >> {self._cronFile}')
+        self._exec(f'crontab {self._cronFile}')
+        self._exec(f'/bin/rm {self._cronFile}')
 
         filename = command_to_exec.split(' ')[0]
-        self._exec('/bin/chmod +x ' + filename)
+        self._exec(f'/bin/chmod +x {filename}')
 
         om.out.debug('Added command: "' + command_to_exec +
                      '" to the remote crontab of user : "' + user + '".')
@@ -88,9 +88,9 @@ class crontabHandler(delayedExecution):
         return wait_time
 
     def restore_old_schedule(self):
-        self._exec('/bin/echo -e ' + self._oldCron + ' > ' + self._cronFile)
-        self._exec('crontab ' + self._cronFile)
-        self._exec('/bin/rm ' + self._cronFile)
+        self._exec(f'/bin/echo -e {self._oldCron} > {self._cronFile}')
+        self._exec(f'crontab {self._cronFile}')
+        self._exec(f'/bin/rm {self._cronFile}')
         om.out.debug('Successfully restored old crontab.')
 
     def _createCronLine(self, remoteDate, command_to_exec):
@@ -121,7 +121,6 @@ class crontabHandler(delayedExecution):
             minute = int(minute) + delta
             hour, minute, am_pm = self._fix_time(hour, minute)
 
-            res_line = '%s %s %s %s %s %s' % (minute, hour, day_number, month,
-                                             week_day, command_to_exec)
-            
+            res_line = f'{minute} {hour} {day_number} {month} {week_day} {command_to_exec}'
+
         return res_line, wait_time

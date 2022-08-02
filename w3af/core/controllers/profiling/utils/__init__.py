@@ -26,7 +26,7 @@ import threading
 
 def get_filename_fmt():
     pid = os.getpid()
-    date = datetime.datetime.today().strftime("%Y-%d-%m-%I_%M")
+    date = datetime.datetime.now().strftime("%Y-%d-%m-%I_%M")
 
     return pid, date
 

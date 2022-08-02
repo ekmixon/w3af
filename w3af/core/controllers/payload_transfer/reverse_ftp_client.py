@@ -10,10 +10,10 @@ if __name__ == '__main__':
     cs.connect((ip, port))
 
     while 1:
-        data = cs.recv(1024)
-        if not data:
-            break
-        f.write(data)
+        if data := cs.recv(1024):
+            f.write(data)
 
+        else:
+            break
     cs.close()
     f.close()

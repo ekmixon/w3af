@@ -77,9 +77,7 @@ def build_ws_upgrade_request(web_socket_url, extra_headers=None,
     forged_url = forged_url.replace('ws://', 'http://', 1)
     forged_url = URL(forged_url)
 
-    upgrade_request = FuzzableRequest(forged_url, 'GET',
-                                      headers=request_headers)
-    return upgrade_request
+    return FuzzableRequest(forged_url, 'GET', headers=request_headers)
 
 
 def negotiate_websocket_version(uri_opener, websocket_url):
@@ -157,10 +155,7 @@ def is_successful_upgrade(upgrade_response):
     sec_websocket_accept_value, _ = headers.iget('Sec-WebSocket-Accept', None)
 
     # Relaxed check
-    if upgrade_value and connection_value and sec_websocket_accept_value:
-        return True
-
-    return False
+    return bool(upgrade_value and connection_value and sec_websocket_accept_value)
 
 
 class WebSocketProtocolException(BaseFrameworkException):

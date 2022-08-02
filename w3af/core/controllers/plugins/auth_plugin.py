@@ -172,10 +172,7 @@ class AuthPlugin(Plugin):
         return message_fmt % (self.get_name(), message, self._debugging_id)
 
     def _set_debugging_id(self, debugging_id):
-        if debugging_id is not None:
-            self._debugging_id = debugging_id
-        else:
-            self._debugging_id = rand_alnum(8)
+        self._debugging_id = rand_alnum(8) if debugging_id is None else debugging_id
 
     def _get_main_authentication_url(self):
         """
@@ -190,23 +187,13 @@ class AuthPlugin(Plugin):
         if len(self._login_result_log) < self.MAX_CONSECUTIVE_FAILED_LOGIN_COUNT:
             return False
 
-        # This awful range statement generates -1, -2, -3 when
-        # self.MAX_CONSECUTIVE_FAILED_LOGIN_COUNT is set to 3.
-        for i in range(-1, - self.MAX_CONSECUTIVE_FAILED_LOGIN_COUNT - 1, -1):
-
-            # If there is at least one successful login in the last three
-            # then the max consecutive failed login was not exceeded
-            if self._login_result_log[i]:
-                return False
-
-        return True
+        return not any(
+            self._login_result_log[i]
+            for i in range(-1, -self.MAX_CONSECUTIVE_FAILED_LOGIN_COUNT - 1, -1)
+        )
 
     def _all_login_attempts_failed(self):
-        for login_result in self._login_result_log:
-            if login_result:
-                return False
-
-        return True
+        return not any(self._login_result_log)
 
     def _handle_authentication_failure(self):
         self._login_result_log.append(False)

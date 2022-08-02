@@ -81,7 +81,7 @@ class TestHistoryItem(unittest.TestCase):
             h1.save()
 
         h2 = HistoryItem()
-        self.assertEqual(len(h2.find([('tag', "%" + tag_value + "%", 'like')])), 1)
+        self.assertEqual(len(h2.find([('tag', f"%{tag_value}%", 'like')])), 1)
         self.assertEqual(len(h2.find([('code', 302, '=')])), 1)
         self.assertEqual(len(h2.find([('mark', 1, '=')])), 1)
         self.assertEqual(len(h2.find([('has_qs', 1, '=')])), 500)
@@ -95,7 +95,7 @@ class TestHistoryItem(unittest.TestCase):
     def test_mark(self):
         mark_id = 3
         url = URL('http://w3af.org/a/b/c.php')
-        
+
         for i in xrange(0, 500):
             request = HTTPRequest(url, data='a=1')
             hdr = Headers([('Content-Type', 'text/html')])
@@ -149,7 +149,7 @@ class TestHistoryItem(unittest.TestCase):
         body = '<html>' + LOREM * 20
 
         for i in xrange(1, force_compression_count):
-            request = HTTPRequest(url, data='a=%s' % i)
+            request = HTTPRequest(url, data=f'a={i}')
 
             response = HTTPResponse(200, body, headers, url, url)
             response.set_id(i)
@@ -165,7 +165,10 @@ class TestHistoryItem(unittest.TestCase):
         compressed_file_temp = os.path.join(h.get_session_dir(), '1-150.zip.tmp')
         self.assertFalse(os.path.exists(compressed_file_temp))
 
-        expected_files = ['%s.trace' % i for i in range(1, HistoryItem._COMPRESSED_FILE_BATCH + 1)]
+        expected_files = [
+            f'{i}.trace' for i in range(1, HistoryItem._COMPRESSED_FILE_BATCH + 1)
+        ]
+
 
         _zip = zipfile.ZipFile(compressed_file, mode='r')
         self.assertEqual(_zip.namelist(), expected_files)
@@ -205,7 +208,7 @@ class TestHistoryItem(unittest.TestCase):
         request = HTTPRequest(url, data='a=1')
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>', hdr, url, url)
-        
+
         h1 = HistoryItem()
         h1.request = request
         res.set_id(1)
@@ -214,15 +217,14 @@ class TestHistoryItem(unittest.TestCase):
 
         table_name = h1.get_table_name()
         db = get_default_temp_db_instance()
-        
+
         self.assertTrue(db.table_exists(table_name))
-        
+
         clear_result = h1.clear()
-        
+
         self.assertTrue(clear_result)
-        self.assertFalse(os.path.exists(h1._session_dir),
-                         '%s exists.' % h1._session_dir)
-        
+        self.assertFalse(os.path.exists(h1._session_dir), f'{h1._session_dir} exists.')
+
         # Changed the meaning of clear a little bit... now it simply removes
         # all rows from the table, not the table itself
         self.assertTrue(db.table_exists(table_name))        

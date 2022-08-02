@@ -51,7 +51,7 @@ def clean_data_container(data_container):
         else:
             _type = 'string'
 
-        result.append('%s=%s' % (key.encode(DEFAULT_ENCODING), _type))
+        result.append(f'{key.encode(DEFAULT_ENCODING)}={_type}')
 
     return '&'.join(result)
 
@@ -64,13 +64,11 @@ def clean_fuzzable_request(fuzzable_request, dc_handler=clean_data_container):
 
     :param fuzzable_request: The fuzzable request instance to clean
     """
-    res = '(%s)-' % fuzzable_request.get_method().upper()
+    res = f'({fuzzable_request.get_method().upper()})-'
     res += clean_url(fuzzable_request.get_uri(), dc_handler=dc_handler)
 
-    raw_data = fuzzable_request.get_raw_data()
-
-    if raw_data:
-        res += '!' + dc_handler(raw_data)
+    if raw_data := fuzzable_request.get_raw_data():
+        res += f'!{dc_handler(raw_data)}'
 
     return res
 
@@ -124,7 +122,7 @@ def clean_url(url, dc_handler=clean_data_container):
 
     if url.has_query_string():
         res += url.get_path().encode(DEFAULT_ENCODING)[1:]
-        res += '?' + dc_handler(url.querystring)
+        res += f'?{dc_handler(url.querystring)}'
     else:
         res += clean_path_filename(url)
 

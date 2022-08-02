@@ -48,9 +48,8 @@ class DiskSet(DiskList):
         with self.lock:
             if self.__contains__(value):
                 return False
-            else:
-                super(DiskSet, self).append(value)
-                return True
+            super(DiskSet, self).append(value)
+            return True
 
     def update(self, value_list):
         """
@@ -69,6 +68,6 @@ class DiskSet(DiskList):
         raise RuntimeError('Not a valid DiskSet method.')
 
     def __unicode__(self):
-        return u'<DiskSet [%s]>' % ', '.join([unicode(i) for i in self])
+        return f"<DiskSet [{', '.join([unicode(i) for i in self])}]>"
     
     __str__ = __unicode__

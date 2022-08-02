@@ -36,8 +36,11 @@ class question_target_1(question):
 
         self._question_title = 'Target URL'
 
-        self._question_str = 'In this step you should specify the URL of the target web application.'
-        self._question_str += ' Remember that you can separate different URLs with commas like this: \n'
+        self._question_str = (
+            'In this step you should specify the URL of the target web application.'
+            + ' Remember that you can separate different URLs with commas like this: \n'
+        )
+
         self._question_str += '    - http://host.tld/a.php , http://host.tld/b.php'
 
     def _get_option_objects(self):

@@ -36,7 +36,7 @@ class WhereHelper(object):
 
     def _makePair(self, field, value, oper='=', conjunction='AND'):
         """Auxiliary method."""
-        result = ' ' + conjunction + ' ' + field + ' ' + oper + ' ?'
+        result = f' {conjunction} {field} {oper} ?'
         return (result, value)
 
     def sql(self, whereStr=True):
@@ -66,7 +66,7 @@ class WhereHelper(object):
                     self._values.append(value)
                     tmpWhere += sql
                 if tmpWhere:
-                    result += " AND (" + tmpWhere[len(oper) + 1:] + ")"
+                    result += f" AND ({tmpWhere[len(oper) + 1:]})"
             else:
                 sql, value = self._makePair(cond[0], cond[1], cond[2])
                 self._values.append(value)
@@ -74,9 +74,9 @@ class WhereHelper(object):
         result = result[5:]
 
         if whereStr and result:
-            result = ' WHERE ' + result
+            result = f' WHERE {result}'
 
         return result
 
     def __str__(self):
-        return self.sql() + ' | ' + str(self.values())
+        return f'{self.sql()} | {str(self.values())}'

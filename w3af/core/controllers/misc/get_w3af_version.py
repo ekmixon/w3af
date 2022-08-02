@@ -52,7 +52,7 @@ def get_w3af_version_as_dict():
     :return: All the version information in a dict
     """
     commit = to_short_id(get_latest_commit()) if is_git_repo() else 'unknown'
-    cdate = ' - %s' % get_latest_commit_date() if is_git_repo() else ''
+    cdate = f' - {get_latest_commit_date()}' if is_git_repo() else ''
     branch = get_current_branch() if is_git_repo() else 'unknown'
     dirty = 'Yes' if is_dirty_repo() else 'No'
 

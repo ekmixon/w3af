@@ -30,4 +30,4 @@ class Debian76(Ubuntu1204):
     @staticmethod
     def is_current_platform():
         dist_name, dist_version, _ = platform.dist()
-        return 'debian' == dist_name and '7.6' == dist_version
+        return dist_name == 'debian' and dist_version == '7.6'

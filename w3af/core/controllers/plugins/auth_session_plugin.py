@@ -171,10 +171,7 @@ class AuthSessionPlugin(AuthPlugin):
 
         total_session_checks = self._valid_sessions_count + self._invalid_sessions_count
 
-        if total_session_checks < self.MIN_SESSION_COUNT_SAMPLES:
-            return False
-
-        return True
+        return total_session_checks >= self.MIN_SESSION_COUNT_SAMPLES
 
     def _log_session_failed_http_response(self, http_response):
         response_saved = self._log_http_response(http_response)

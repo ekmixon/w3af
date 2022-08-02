@@ -101,9 +101,7 @@ class TestStrategy(PluginTest):
         loops = 2 if is_running_on_ci() else 10
 
         for i in xrange(loops):
-            print('Start run #%s' % i)
-            found_vulns = set()
-
+            print(f'Start run #{i}')
             p = subprocess.Popen([python_executable, 'w3af_console',
                                   '-n', '-s', SCRIPT_PATH],
                                  stdout=subprocess.PIPE,
@@ -114,13 +112,15 @@ class TestStrategy(PluginTest):
 
             stdout, stderr = p.communicate()
             i_vuln_count = stdout.count(VULN_STRING)
-            print('%s vulnerabilities found' % i_vuln_count)
+            print(f'{i_vuln_count} vulnerabilities found')
 
             self.assertNotEqual(i_vuln_count, 0, stdout)
 
-            for line in stdout.split('\n'):
-                if VULN_STRING in line:
-                    found_vulns.add(URL_VULN_RE.search(line).group(1))
+            found_vulns = {
+                URL_VULN_RE.search(line)[1]
+                for line in stdout.split('\n')
+                if VULN_STRING in line
+            }
 
             for previous_found in all_previous_vulns:
                 self.assertEqual(found_vulns, previous_found)

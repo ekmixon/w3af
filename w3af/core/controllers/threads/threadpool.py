@@ -352,7 +352,7 @@ class Pool(ThreadPool):
         # limit.
         #
         if max_queued_tasks != 0:
-            assert max_queued_tasks - 1 > 0, 'max_queued_tasks needs to be at least 2'
+            assert max_queued_tasks > 1, 'max_queued_tasks needs to be at least 2'
 
         self._setup_queues(max_queued_tasks - 1)
         self._taskqueue = Queue.Queue(maxsize=1)
@@ -436,7 +436,7 @@ class Pool(ThreadPool):
         object (instead of a function) in order to keep better stats of
         what it is doing.
         """
-        for i in range(self._processes - len(self._pool)):
+        for _ in range(self._processes - len(self._pool)):
             w = self.Process(target=Worker(),
                              args=(self._inqueue,
                                    self._outqueue,

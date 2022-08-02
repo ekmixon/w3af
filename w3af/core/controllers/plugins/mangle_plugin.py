@@ -69,10 +69,7 @@ class ManglePlugin(Plugin):
         """
         This function is called when sorting mangle plugins.
         """
-        if self.get_priority() > other.get_priority():
-            return True
-        else:
-            return False
+        return self.get_priority() > other.get_priority()
 
     def __lt__(self, other):
         """
@@ -84,10 +81,7 @@ class ManglePlugin(Plugin):
         """
         This function is called when sorting mangle plugins.
         """
-        if self.get_priority() == other.get_priority():
-            return True
-        else:
-            return False
+        return self.get_priority() == other.get_priority()
 
     def get_priority(self):
         """
@@ -103,11 +97,10 @@ class ManglePlugin(Plugin):
         If the content-length header is present, calculate the new len and
         update the header.
         """
-        cl = 'Content-Length'
-        for i in response.get_headers():
-            if i.lower() == 'content-length':
-                cl = i
-                break
+        cl = next(
+            (i for i in response.get_headers() if i.lower() == 'content-length'),
+            'Content-Length',
+        )
 
         headers = response.get_headers()
         headers[cl] = str(len(response.get_body()))

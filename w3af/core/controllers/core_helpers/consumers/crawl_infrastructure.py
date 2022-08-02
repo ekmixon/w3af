@@ -76,8 +76,7 @@ class CrawlInfrastructure(BaseConsumer):
         #
         # Read OrderedCachedQueue's documentation to understand why order is
         # important
-        self.in_queue = OrderedCachedQueue(maxsize=10,
-                                           name=self.get_name() + 'In')
+        self.in_queue = OrderedCachedQueue(maxsize=10, name=f'{self.get_name()}In')
 
     def get_name(self):
         return 'CrawlInfra'
@@ -352,14 +351,14 @@ class CrawlInfrastructure(BaseConsumer):
         # print the URLs
         om.out.information('The URL list is:')
 
-        tmp_url_list = ['- %s' % u.url_string for u in tmp_url_list]
+        tmp_url_list = [f'- {u.url_string}' for u in tmp_url_list]
         tmp_url_list.sort()
         map(om.out.information, tmp_url_list)
 
         # Now I simply print the list that I have after the filter.
         om.out.information('The list of fuzzable requests is:')
 
-        tmp_fr = [u'- %s' % unicode(fr) for fr in all_known_fuzzable_requests]
+        tmp_fr = [f'- {unicode(fr)}' for fr in all_known_fuzzable_requests]
         tmp_fr.sort()
         map(om.out.information, tmp_fr)
 

@@ -73,24 +73,18 @@ class ScriptText(HtmlText):
 
         script_text = self.get_context_content()
 
-        for js_context in get_js_context_iter(script_text, self.payload):
-            # At least one of the contexts where the payload is echoed in the
-            # script text needs to be escaped from
-            if js_context.can_break():
-                return True
-
-        return False
+        return any(
+            js_context.can_break()
+            for js_context in get_js_context_iter(script_text, self.payload)
+        )
 
     def is_executable(self):
         script_text = self.get_context_content()
 
-        for js_context in get_js_context_iter(script_text, self.payload):
-            # At least one of the contexts where the payload is echoed in the
-            # script text needs to be executable
-            if js_context.is_executable():
-                return True
-
-        return False
+        return any(
+            js_context.is_executable()
+            for js_context in get_js_context_iter(script_text, self.payload)
+        )
 
 
 class CSSText(HtmlText):
@@ -104,13 +98,10 @@ class CSSText(HtmlText):
 
         css_text = self.get_context_content()
 
-        for css_context in get_css_context_iter(css_text, self.payload):
-            # At least one of the contexts where the payload is echoed in the
-            # CSS text needs to be escaped from
-            if css_context.can_break():
-                return True
-
-        return False
+        return any(
+            css_context.can_break()
+            for css_context in get_css_context_iter(css_text, self.payload)
+        )
 
 
 class HtmlDeclaration(BaseContext):
@@ -165,11 +156,10 @@ class HTMLAttrQuoteGeneric(BaseContext):
                                self.can_break_js_event,
                                self.can_break_html_attr_with_js_protocol]
 
-        for is_executable_handler in executable_handlers:
-            if is_executable_handler():
-                return True
-
-        return False
+        return any(
+            is_executable_handler()
+            for is_executable_handler in executable_handlers
+        )
 
     def can_break_adding_js_protocol(self):
         """
@@ -191,10 +181,7 @@ class HTMLAttrQuoteGeneric(BaseContext):
         if ':' not in self.payload:
             return False
 
-        if not self.value.startswith(self.payload):
-            return False
-
-        return True
+        return bool(self.value.startswith(self.payload))
 
     def can_break_style(self):
         """
@@ -207,13 +194,10 @@ class HTMLAttrQuoteGeneric(BaseContext):
         # Delegate the can_break to the CSS parser
         css_text = self.get_context_content()
 
-        for css_context in get_css_context_iter(css_text, self.payload):
-            # At least one of the contexts where the payload is echoed in the
-            # CSS text needs to be escaped from
-            if css_context.can_break():
-                return True
-
-        return False
+        return any(
+            css_context.can_break()
+            for css_context in get_css_context_iter(css_text, self.payload)
+        )
 
     def can_break_js_event(self):
         """
@@ -227,14 +211,10 @@ class HTMLAttrQuoteGeneric(BaseContext):
         # be there (not required by browsers) but supported in some
         script_text = self.extract_code()
 
-        # Delegate the can_break to the JavaScript parser
-        for js_context in get_js_context_iter(script_text, self.payload):
-            # At least one of the contexts where the payload is echoed in the
-            # script text needs to be escaped from
-            if js_context.can_break():
-                return True
-
-        return False
+        return any(
+            js_context.can_break()
+            for js_context in get_js_context_iter(script_text, self.payload)
+        )
 
     def can_break_html_attr_with_js_protocol(self):
         """
@@ -250,14 +230,10 @@ class HTMLAttrQuoteGeneric(BaseContext):
             # javascript:
             return False
 
-        # Delegate the can_break to the JavaScript parser
-        for js_context in get_js_context_iter(script_text, self.payload):
-            # At least one of the contexts where the payload is echoed in the
-            # script text needs to be escaped from
-            if js_context.can_break():
-                return True
-
-        return False
+        return any(
+            js_context.can_break()
+            for js_context in get_js_context_iter(script_text, self.payload)
+        )
 
     def is_executable_style(self):
         """
@@ -270,13 +246,10 @@ class HTMLAttrQuoteGeneric(BaseContext):
         # Delegate the is_executable to the CSS parser
         css_text = self.get_context_content()
 
-        for css_context in get_css_context_iter(css_text, self.payload):
-            # At least one of the contexts where the payload is echoed in the
-            # CSS text needs to be escaped from
-            if css_context.is_executable():
-                return True
-
-        return False
+        return any(
+            css_context.is_executable()
+            for css_context in get_css_context_iter(css_text, self.payload)
+        )
 
     def is_executable_js_event(self):
         """
@@ -290,14 +263,10 @@ class HTMLAttrQuoteGeneric(BaseContext):
         # be there (not required by browsers) but supported in some
         script_text = self.extract_code()
 
-        # Delegate the can_break to the JavaScript parser
-        for js_context in get_js_context_iter(script_text, self.payload):
-            # At least one of the contexts where the payload is echoed in the
-            # script text needs to be escaped from
-            if js_context.is_executable():
-                return True
-
-        return False
+        return any(
+            js_context.is_executable()
+            for js_context in get_js_context_iter(script_text, self.payload)
+        )
 
     def is_executable_html_attr_with_js_protocol(self):
         """
@@ -313,14 +282,10 @@ class HTMLAttrQuoteGeneric(BaseContext):
             # javascript:
             return False
 
-        # Delegate the is_executable to the JavaScript parser
-        for js_context in get_js_context_iter(script_text, self.payload):
-            # At least one of the contexts where the payload is echoed in the
-            # script text needs to be escaped from
-            if js_context.is_executable():
-                return True
-
-        return False
+        return any(
+            js_context.is_executable()
+            for js_context in get_js_context_iter(script_text, self.payload)
+        )
 
     def is_executable(self):
         """
@@ -331,11 +296,10 @@ class HTMLAttrQuoteGeneric(BaseContext):
                                self.is_executable_js_event,
                                self.is_executable_html_attr_with_js_protocol]
 
-        for is_executable_handler in executable_handlers:
-            if is_executable_handler():
-                return True
-
-        return False
+        return any(
+            is_executable_handler()
+            for is_executable_handler in executable_handlers
+        )
 
 
 class HtmlAttrSingleQuote(HTMLAttrQuoteGeneric):

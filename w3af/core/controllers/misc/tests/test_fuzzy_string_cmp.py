@@ -29,47 +29,45 @@ from w3af.core.controllers.misc.fuzzy_string_cmp import (relative_distance,
 class TestFuzzyStringCompare(unittest.TestCase):
 
     def test_all(self):
-        acceptance_tests = []
-        acceptance_tests.append(('a', 'a', 1.0))
-        acceptance_tests.append(('a', 'a', 0.1))
-        acceptance_tests.append(('a', 'a', 0.0))
+        acceptance_tests = [
+            ('a', 'a', 1.0),
+            ('a', 'a', 0.1),
+            ('a', 'a', 0.0),
+            ('a', 'b', 1.0),
+            ('a', 'b', 0.1),
+            ('a', 'b', 0.0),
+            ('a', 'ab', 1.0),
+            ('a', 'ab', 0.1),
+            ('a', 'b', 0.0000000000000000001),
+            ('a', 'b' * 100, 1.0),
+            ('a', 'ab', 0.66666666666),
+            ('a', 'aab', 0.5),
+            ('a', 'aaab', 0.4),
+            (
+                'a',
+                'aaaab',
+                0.33333333333333333333333333333333333333333333333333333333,
+            ),
+            ('a' * 25, 'a', 1.0),
+            ('aaa', 'aa', 1.0),
+            ('a', 'a', 1.0),
+            ('a' * 25, 'a', 0.076923076923076927),
+            ('aaa', 'aa', 0.8),
+            ('a', 'a', 0.0),
+        ]
 
-        acceptance_tests.append(('a', 'b', 1.0))
-        acceptance_tests.append(('a', 'b', 0.1))
-        acceptance_tests.append(('a', 'b', 0.0))
-
-        acceptance_tests.append(('a', 'ab', 1.0))
-        acceptance_tests.append(('a', 'ab', 0.1))
-
-        acceptance_tests.append(('a', 'b', 0.0000000000000000001))
-        acceptance_tests.append(('a', 'b' * 100, 1.0))
-
-        acceptance_tests.append(('a', 'ab', 0.66666666666))
-        acceptance_tests.append(('a', 'aab', 0.5))
-        acceptance_tests.append(('a', 'aaab', 0.4))
-        acceptance_tests.append(('a', 'aaaab', 0.33333333333333333333333333333333333333333333333333333333))
-
-        acceptance_tests.append(('a' * 25, 'a', 1.0))
-        acceptance_tests.append(('aaa', 'aa', 1.0))
-        acceptance_tests.append(('a', 'a', 1.0))
-
-        acceptance_tests.append(('a' * 25, 'a', 0.076923076923076927))
-        acceptance_tests.append(('aaa', 'aa', 0.8))
-
-        acceptance_tests.append(('a', 'a', 0.0))
+        msg = ('fuzzy_equal and relative_distance returned'
+               ' different results for the same parameters:\n'
+               '    - Parameter #1: %s\n'
+               '    - Parameter #2: %s\n'
+               '    - Threshold: %s\n'
+               '    - Result fuzzy_equal: %s\n'
+               '    - Result relative_distance: %s\n')
 
         for e, d, f in acceptance_tests:
             res1 = fuzzy_equal(e, d, f)
             res2 = relative_distance(e, d) >= f
-            
-            msg = ('fuzzy_equal and relative_distance returned'
-                   ' different results for the same parameters:\n'
-                   '    - Parameter #1: %s\n'
-                   '    - Parameter #2: %s\n'
-                   '    - Threshold: %s\n'
-                   '    - Result fuzzy_equal: %s\n'
-                   '    - Result relative_distance: %s\n')
-            
+
             self.assertEqual(res1, res2, msg % (e, d, f, res1, relative_distance(e, d)))
 
     def test_relative_distance(self):

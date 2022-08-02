@@ -37,9 +37,7 @@ class FilterScapy(logging.Filter):
         pass
 
     def filter(self, rec):
-        if 'No route found for IPv6' in rec.msg:
-            return False
-        return True
+        return 'No route found for IPv6' not in rec.msg
 
 logger = logging.getLogger("scapy.runtime")
 logger.addFilter(FilterScapy())

@@ -17,8 +17,7 @@ def get_not_found_cache_rate_data(scan_log_filename, scan):
     cache_rate_timestamps = []
 
     for line in scan:
-        match = CACHE_RATE.search(line)
-        if match:
+        if match := CACHE_RATE.search(line):
             cache_rate.append(int(match.group(1)))
             cache_rate_timestamps.append(get_line_epoch(line))
 

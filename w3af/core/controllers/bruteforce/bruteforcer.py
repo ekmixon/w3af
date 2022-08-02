@@ -58,16 +58,14 @@ class PasswordBruteforcer(object):
             yield pwd
 
             if self.l337_p4sswd:
-                for pwd in unique_everseen(make_leet(pwd)):
-                    yield pwd
+                yield from unique_everseen(make_leet(pwd))
 
     def _special_passwords(self):
         yield self._url.get_domain()
         yield self._url.get_root_domain()
-        
+
         if self.use_profiling:
-            for pwd in get_profiling_results(self.profiling_number):
-                yield pwd
+            yield from get_profiling_results(self.profiling_number)
 
     def _read_pwd_file(self):
         for line in file(self.passwd_file):
@@ -117,9 +115,7 @@ class UserPasswordBruteforcer(object):
         TODO: I need a way to calculate the __len__ of this generator in order
               to avoid the "iterable = list(iterable)" in pool.py
         """
-        for user, pwd in self._combo():
-            yield user, pwd
-
+        yield from self._combo()
         user_chain = chain(self._user_from_file(),
                            self._special_users(),)
 
@@ -135,8 +131,7 @@ class UserPasswordBruteforcer(object):
 
     def _user_from_file(self):
         for line in file(self.users_file):
-            user = line.strip()
-            yield user
+            yield line.strip()
 
     def _special_users(self):
         """
@@ -146,21 +141,14 @@ class UserPasswordBruteforcer(object):
 
         if self.use_emails:
             emails = kb.kb.get('emails', 'emails')
-            for user in [v['user'] for v in emails]:
-                yield user
-
+            yield from [v['user'] for v in emails]
             emails = kb.kb.get('emails', 'emails')
-            for user in [v['mail'] for v in emails]:
-                yield user
-
+            yield from [v['mail'] for v in emails]
         if self.use_SVN_users:
             users = kb.kb.get('svn_users', 'users')
-            for user in [v['user'] for v in users]:
-                yield user
-
+            yield from [v['user'] for v in users]
         if self.use_profiling:
-            for user in get_profiling_results(self.profiling_number):
-                yield user
+            yield from get_profiling_results(self.profiling_number)
 
     def _combo(self):
         """

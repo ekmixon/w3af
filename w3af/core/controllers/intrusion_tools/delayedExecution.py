@@ -49,7 +49,7 @@ class delayedExecution(object):
 
         if minute == 60:
             minute = 0
-            hour = hour + 1
+            hour += 1
             return self._fix_time(hour, minute, am_pm)
 
         if hour == 13 and am_pm.startswith('a'):

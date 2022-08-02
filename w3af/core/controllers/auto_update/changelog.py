@@ -48,7 +48,7 @@ class Commit(object):
     def add_change(self, action_short, filename):
         if action_short not in ACTIONS.values():
             raise ValueError('Action must be in ACTIONS.')
-        
+
         self._changes.append((action_short, filename))
                              
     @property
@@ -77,7 +77,7 @@ class Commit(object):
         return self._changes
     
     def __str__(self):
-        return '<Commit %s with %s file changes>' % (self.commit_id, len(self._changes))
+        return f'<Commit {self.commit_id} with {len(self._changes)} file changes>'
 
 def get_affected_file(file_diff):
     if file_diff.a_blob:
@@ -97,43 +97,43 @@ class ChangeLog(object):
     
     def get_changes(self):
         changes = []
-        
-        crange = '%s..%s' % (self.start, self.end)
-        
+
+        crange = f'{self.start}..{self.end}'
+
         for git_commit in git.Repo(W3AF_LOCAL_PATH).iter_commits(crange):
             commit = Commit(git_commit)
-            
+
             diff = git_commit.parents[0].diff(git_commit)
-            
+
             for action_short in ACTIONS.values():
                 for file_diff in diff.iter_change_type(action_short):
                     affected_file = get_affected_file(file_diff)
                     commit.add_change(action_short, affected_file)
-                    
+
             changes.append(commit)
-        
+
         return changes
     
     def __str__(self):
         output = ''
         MAX_FILES = 15
         MAX_COMMITS = 10
-        
+
         for commit in self.get_changes()[:MAX_COMMITS]:
-            
-            file_changes_str = ''
-            for file_change in commit.changes[:MAX_FILES]:
-                file_changes_str += '    %s %s\n' % (file_change[0],
-                                                     file_change[1])
-            
+
+            file_changes_str = ''.join(
+                '    %s %s\n' % (file_change[0], file_change[1])
+                for file_change in commit.changes[:MAX_FILES]
+            )
+
             if len(commit.changes) > MAX_FILES:
                 more = (len(commit.changes)-MAX_FILES)
                 file_changes_str += '    And %s files more...\n' % more 
-            
+
             output += '%s: %s\n%s' % (commit.commit_id[:10],
                                       commit.summary[:100],
                                       file_changes_str)
-        
+
         return output
             
             

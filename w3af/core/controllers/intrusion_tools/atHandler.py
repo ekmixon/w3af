@@ -44,10 +44,7 @@ class atHandler(delayedExecution):
         om.out.debug('[atHandler] Verifying if the remote user can run the at command.')
         res = self._exec('at')
 
-        if 'Access is denied' in res:
-            return False
-        else:
-            return True
+        return 'Access is denied' not in res
 
     def add_to_schedule(self, command_to_exec):
         """
@@ -75,7 +72,7 @@ class atHandler(delayedExecution):
                     taskId = line.split()[1]
                     break
 
-            self._exec('at ' + taskId + ' /delete')
+            self._exec(f'at {taskId} /delete')
         except:
             om.out.debug('Failed to remove task from "at" service.')
 
@@ -96,21 +93,8 @@ class atHandler(delayedExecution):
             time = time.split('\n')[0].split(':')[1:]
             hour = time[0]
             minute = time[1]
-            if '.' in time[2]:
-                # windows 2k
-                seconds = time[2].split('.')[0]
-            else:
-                # windows XP. This assholes reimplement the time command from
-                # one release to another...
-                seconds = time[2].split(',')[0]
-
-            # TODO ( see below )
-            if int(hour) > 12:
-                am_pm = ''
-            else:
-                # TODO !
-                # analyze... before I had am_pm = 'a' ; check if this is really necesary
-                am_pm = ''
+            seconds = time[2].split('.')[0] if '.' in time[2] else time[2].split(',')[0]
+            am_pm = ''
         except:
             raise BaseFrameworkException('The time command of the remote server returned an unknown format.')
         else:

@@ -27,12 +27,8 @@ from w3af.core.controllers.profiling.thread_time import thread_active_time, CPU_
 
 class TimeStamp(object):
     def __init__(self):
-        if CPU_TIME_IS_ACTIVE:
-            self.thread_cpu_time = thread_active_time()
-            self.wall_time = time.time()
-        else:
-            self.thread_cpu_time = None
-            self.wall_time = time.time()
+        self.thread_cpu_time = thread_active_time() if CPU_TIME_IS_ACTIVE else None
+        self.wall_time = time.time()
 
 
 class TookLine(object):
@@ -83,7 +79,7 @@ class TookLine(object):
         #
         #   Prepare the user provided data
         #
-        method_params = dict() if self._method_params is None else self._method_params
+        method_params = {} if self._method_params is None else self._method_params
 
         # If debugging_id was defined then we add it to the parameters
         if self._debugging_id:
@@ -142,6 +138,6 @@ class TookLine(object):
         # Adding any extras we might have
         #
         if parentheses_data:
-            msg += ' (%s)' % ', '.join(parentheses_data)
+            msg += f" ({', '.join(parentheses_data)})"
 
         om.out.debug(msg)

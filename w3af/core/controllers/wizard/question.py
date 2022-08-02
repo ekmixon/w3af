@@ -54,11 +54,7 @@ class question(object):
 
         :return: A list of options for this question.
         """
-        if self._previously_answered_values:
-            # We get here when the user hits previous
-            return self._previously_answered_values
-        else:
-            return self._get_option_objects()
+        return self._previously_answered_values or self._get_option_objects()
 
     def _get_option_objects(self):
         """
@@ -67,8 +63,7 @@ class question(object):
 
         :return: The option objects
         """
-        ol = OptionList()
-        return ol
+        return OptionList()
 
     def set_previously_answered_values(self, values):
         """
@@ -91,4 +86,4 @@ class question(object):
         return None
 
     def __repr__(self):
-        return '<question object ' + self._question_id + '>'
+        return f'<question object {self._question_id}>'

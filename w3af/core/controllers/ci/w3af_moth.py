@@ -25,7 +25,7 @@ DEFAULT_PHP_MOTH = 'w3af-moth-fallback:80'
 
 
 def get_w3af_moth_http(path='/'):
-    return 'http://moth:9008%s' % path
+    return f'http://moth:9008{path}'
 
 
 
